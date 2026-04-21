@@ -1,1 +1,24 @@
 .superpowers/
+node_modules
+
+# next
+.next/
+out/
+
+# env
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel/
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/blob-report
+/playwright/.cache/
+
+# OS
+.DS_Store
