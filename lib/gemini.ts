@@ -13,9 +13,9 @@ export const PERSONA_RESPONSE_SCHEMA: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
     oneliner: { type: SchemaType.STRING, description: "페르소나 톤이 가장 잘 드러나는 한 마디 (15~30자)" },
-    strengths: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
-    concerns: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
-    suggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
+    strengths: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    concerns: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    suggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
   },
   required: ["oneliner", "strengths", "concerns", "suggestions"],
 }
