@@ -408,7 +408,8 @@ NEXT_PUBLIC_APP_URL=... # OG 메타용 (선택)
 
 ### 카드 잠금 상태
 - CSS `filter: blur(8px)` + 반투명 오버레이
-- 콘텐츠는 **광고 시청 전엔 페치하지 않음** (광고 시청률 보장 + API 비용 절약)
+- **잠긴 4개 카드의 Gemini 호출은 광고 시청 전엔 발생하지 않음** (광고 시청률 보장 + API 비용 절약)
+- 미리 열린 2개 카드는 결과 화면 진입 즉시 호출 시작
 
 ### 광고 모달 플로우
 
@@ -539,7 +540,7 @@ Gemini API는 모킹 — 실제 호출 안 함.
 
 ### E2E 테스트 (Playwright) — 최소 2개
 - **시나리오 A:** Happy Path 데모 (랜딩 → 업로드 → 결과 → 광고 → 잠금 해제)
-- **시나리오 B:** 새로고침 복구 (sessionStorage)
+- **시나리오 B:** 새로고침 복구 — 결과 화면에서 새로고침 → sessionStorage에서 이미지/잠금 상태/완료 응답 복원 확인
 
 ### 수동 체크리스트 (배포 전 1회)
 - [ ] 모바일 (iPhone Safari, Android Chrome) 레이아웃
@@ -567,16 +568,35 @@ Gemini API는 모킹 — 실제 호출 안 함.
 
 ## 11. 영속성
 
-### localStorage (히스토리)
+### localStorage (완료된 히스토리)
 - 키: `critic6_history`
-- 값: 최근 5개 크리틱 결과 (full session JSON)
-- 새 결과 추가 시 가장 오래된 것 자동 삭제
+- 값: 완료된 크리틱 세션의 배열 (최근 5개, FIFO)
+- 저장 시점: 6명 모두 응답 완료된 직후
 - 사용자가 다시 들어오면 "내 크리틱" 메뉴에서 접근 가능
 
-### sessionStorage (현재 세션)
-- 키: `critic6_session_unlocked`
-- 값: 현재 크리틱 세션의 잠금 해제된 페르소나 ID 배열
+### sessionStorage (현재 진행 중인 세션)
+- 키: `critic6_current_session`
+- 값: 현재 크리틱 세션의 전체 상태 JSON
+  ```typescript
+  {
+    id: string,
+    imageUrl: string,         // base64
+    context: string,
+    unlockedIds: PersonaId[], // 잠금 해제된 페르소나
+    responses: { [id]: PersonaResponse }, // 완료된 응답들
+    inFlightIds: PersonaId[]  // 진행 중인 페르소나 (refresh 시 재호출 대상)
+  }
+  ```
+- 저장 시점: 응답 청크 도착 시마다 incremental 업데이트
 - 새 크리틱 시작 시 초기화
+
+### 새로고침 동작
+- **결과 화면에서 새로고침:**
+  - sessionStorage에서 세션 복원 (이미지·맥락·잠금 상태·완료 응답)
+  - 완료된 응답은 즉시 표시 (재호출 X)
+  - 진행 중이던 응답은 자동 재호출 (광고는 다시 안 봐도 됨, 잠금 해제 상태 유지)
+- **새 크리틱 시작 (업로드 화면 진입):**
+  - sessionStorage 초기화
 
 ### 회원 데이터베이스
 없음. (v2 후보)
