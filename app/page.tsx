@@ -1,6 +1,6 @@
 /**
- * Role: Critic 6 랜딩 페이지 (서버 컴포넌트) — Hero, 페르소나 프리뷰, 푸터를 구성한다
- * Key Features: nav, Hero, PersonaPreviewGrid, footer
+ * Role: Critic 6 랜딩 페이지 — Apple 스타일 glass nav, 블랙 Hero, 라이트 그레이 Personas 섹션
+ * Key Features: sticky dark translucent nav(blur+saturate), Hero ↔ Personas alternating, 블랙 footer
  * Dependencies: components/Hero, components/PersonaPreviewGrid, next/link
  */
 import { Hero } from "@/components/Hero"
@@ -9,17 +9,24 @@ import Link from "next/link"
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <nav className="px-6 py-4 flex justify-between items-center border-b border-neutral-100">
-        <span className="font-serif text-xl">Critic 6</span>
-        <Link href="/history" className="font-sans text-sm text-neutral-600 hover:text-neutral-900">
-          내 크리틱
-        </Link>
+    <main className="min-h-screen bg-white">
+      {/* Apple 시그니처 glass nav: 다크 반투명 + 블러 */}
+      <nav className="sticky top-0 z-40 h-12 bg-black/80 backdrop-blur-[20px] backdrop-saturate-[1.8] text-white">
+        <div className="max-w-[980px] mx-auto h-full px-6 flex items-center justify-between text-[12px]">
+          <Link href="/" className="font-semibold tracking-tight">
+            Critic 6
+          </Link>
+          <Link href="/history" className="text-white/80 hover:text-white">
+            내 크리틱
+          </Link>
+        </div>
       </nav>
+
       <Hero />
       <PersonaPreviewGrid />
-      <footer className="py-12 text-center text-xs text-neutral-400">
-        © 2026 Critic 6 · 가상 광고/페르소나는 패러디 목적입니다.
+
+      <footer className="bg-apple-black text-white/60 py-12 text-center text-[12px] tracking-apple-caption">
+        © 2026 Critic 6 · 가상 광고 · 페르소나는 패러디 목적입니다.
       </footer>
     </main>
   )

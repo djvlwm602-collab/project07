@@ -1,32 +1,48 @@
 /**
- * Role: 랜딩 페이지에서 6개 페르소나를 카드 그리드로 미리보기
- * Key Features: PERSONAS 정적 데이터 매핑, 브랜드 컬러 닷, 한 줄 인용구 표시
+ * Role: 랜딩 페이지에서 6개 페르소나를 Apple 스타일 카드 그리드로 미리보기
+ * Key Features: 라이트 그레이 섹션(블랙 Hero와 alternating), 화이트 카드 + apple-card shadow, 브랜드 컬러 닷
  * Dependencies: @/lib/personas (PERSONAS)
- * Notes: server component (정적 데이터만 사용) — 'use client' 금지
+ * Notes: server component. #personas 앵커로 Hero의 "페르소나 보기" 링크 타겟.
  */
 import { PERSONAS } from "@/lib/personas"
 
 export function PersonaPreviewGrid() {
   return (
-    <section className="max-w-5xl mx-auto px-6 py-16">
-      <p className="font-sans text-xs uppercase tracking-[0.2em] text-neutral-500 text-center mb-8">
-        Personas
-      </p>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        {PERSONAS.map((p) => (
-          <div key={p.id} className="border border-neutral-200 p-6 hover:border-neutral-400 transition-colors">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.brandColor }} />
-              <span className="font-sans text-xs uppercase tracking-wider text-neutral-500">
-                {p.company} · {p.role}
-              </span>
+    <section id="personas" className="bg-apple-gray">
+      <div className="max-w-[980px] mx-auto px-6 py-20 md:py-28">
+        <p className="text-[12px] uppercase tracking-[0.2em] text-apple-text/60 text-center mb-3">
+          Personas
+        </p>
+        <h2 className="text-[32px] md:text-[40px] font-semibold leading-apple-section tracking-[-0.003em] text-apple-text text-center mb-14">
+          6명의 시그니처 관점
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PERSONAS.map((p) => (
+            <div
+              key={p.id}
+              className="bg-white rounded-apple p-6 min-h-[200px] flex flex-col shadow-apple-card"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: p.brandColor }}
+                />
+                <span className="text-[11px] uppercase tracking-[0.12em] text-apple-text/60">
+                  {p.company} · {p.role}
+                </span>
+              </div>
+
+              <h3 className="text-[21px] leading-apple-card tracking-apple-card-title font-bold text-apple-text mb-4">
+                {p.title}
+              </h3>
+
+              <p className="text-[15px] text-apple-text/75 leading-apple-body italic">
+                &ldquo;{p.oneLineQuote}&rdquo;
+              </p>
             </div>
-            <h3 className="font-serif text-xl mb-3 text-neutral-900">{p.title}</h3>
-            <p className="font-sans text-sm italic text-neutral-600 leading-relaxed">
-              "{p.oneLineQuote}"
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )

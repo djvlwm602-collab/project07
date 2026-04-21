@@ -1,8 +1,8 @@
 /**
- * Role: 게이트키퍼 거부 시 표시되는 에러 화면 (이유/추천 + 재시도 버튼)
- * Key Features: 거부 사유 + 추천 안내 메시지, 다시 올리기 CTA
+ * Role: 게이트키퍼 거부 시 표시되는 Apple 스타일 에러 화면 — 이유/추천 + Apple Blue 재시도 CTA
+ * Key Features: 라이트 그레이 섹션, Apple Blue rounded CTA
  * Dependencies: 없음 (presentational only)
- * Notes: T19에서 게이트키퍼 거부 응답을 받았을 때 렌더. 'use client' 필수 (onClick 핸들러).
+ * Notes: 'use client' 필수 (onClick 핸들러).
  */
 "use client"
 
@@ -12,28 +12,29 @@ type Props = {
   onRetry: () => void
 }
 
-// 게이트키퍼 거부 사유와 재시도 액션을 보여주는 단순 프레젠테이션 컴포넌트
 export function ErrorScreen({ reason, suggestion, onRetry }: Props) {
   return (
-    <div className="max-w-md mx-auto px-6 py-16 text-center">
-      <div className="text-5xl mb-6">🎨</div>
-      <h2 className="font-serif text-2xl mb-4">
-        이 이미지로는 디자인 크리틱이 어려워요
-      </h2>
-      <p className="font-sans text-sm text-neutral-600 mb-2">
-        <strong>이유:</strong> {reason}
-      </p>
-      {suggestion && (
-        <p className="font-sans text-sm text-neutral-600 mb-8">
-          <strong>추천:</strong> {suggestion}
+    <div className="min-h-screen bg-apple-gray flex items-center">
+      <div className="max-w-md mx-auto px-6 py-16 text-center">
+        <div className="text-5xl mb-6">🎨</div>
+        <h2 className="text-[28px] md:text-[32px] font-semibold leading-apple-section tracking-[-0.003em] text-apple-text mb-6">
+          이 이미지로는 디자인 크리틱이 어려워요
+        </h2>
+        <p className="text-[15px] text-apple-text/75 leading-apple-body mb-2">
+          <span className="font-semibold text-apple-text">이유</span> · {reason}
         </p>
-      )}
-      <button
-        onClick={onRetry}
-        className="mt-4 px-6 py-3 bg-neutral-900 text-white font-medium hover:bg-neutral-800 transition-colors"
-      >
-        다시 올리기
-      </button>
+        {suggestion && (
+          <p className="text-[15px] text-apple-text/75 leading-apple-body mb-8">
+            <span className="font-semibold text-apple-text">추천</span> · {suggestion}
+          </p>
+        )}
+        <button
+          onClick={onRetry}
+          className="mt-4 bg-apple-blue text-white text-[17px] rounded-apple px-6 py-2.5 hover:brightness-110 transition"
+        >
+          다시 올리기
+        </button>
+      </div>
     </div>
   )
 }

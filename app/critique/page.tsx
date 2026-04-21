@@ -230,7 +230,7 @@ export default function CritiquePage() {
 
   if (mode === "idle") {
     return (
-      <main className="min-h-screen">
+      <main className="min-h-screen bg-apple-gray">
         <Nav />
         <UploadZone onSubmit={submit} />
       </main>
@@ -239,23 +239,25 @@ export default function CritiquePage() {
 
   if (mode === "submitting") {
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="min-h-screen bg-apple-gray flex items-center justify-center">
         <div className="text-center">
-          <div className="font-serif text-2xl mb-3">디자인 분석 중…</div>
-          <div className="text-sm text-neutral-500">잠시만 기다려주세요</div>
+          <div className="text-[28px] font-semibold tracking-[-0.003em] text-apple-text mb-2">
+            디자인 분석 중…
+          </div>
+          <div className="text-[15px] text-apple-text/60">잠시만 기다려주세요</div>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-apple-gray">
       <Nav onNew={reset} />
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-10">
         {session && (
-          <div className="mb-6">
-            <p className="text-xs text-neutral-500 mb-1">맥락</p>
-            <p className="font-sans text-sm text-neutral-700">{session.context || "(없음)"}</p>
+          <div className="mb-8">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-apple-text/50 mb-1.5">맥락</p>
+            <p className="text-[15px] text-apple-text/85">{session.context || "(없음)"}</p>
           </div>
         )}
         <ResultGrid states={cardStates} onUnlock={requestUnlock} />
@@ -267,17 +269,19 @@ export default function CritiquePage() {
 
 function Nav({ onNew }: { onNew?: () => void }) {
   return (
-    <nav className="px-6 py-4 flex justify-between items-center border-b border-neutral-100">
-      <a href="/" className="font-serif text-xl">Critic 6</a>
-      <div className="flex gap-4 items-center">
-        {onNew && (
-          <button onClick={onNew} className="text-sm text-neutral-600 hover:text-neutral-900">
-            새 크리틱
-          </button>
-        )}
-        <a href="/history" className="text-sm text-neutral-600 hover:text-neutral-900">
-          내 크리틱
-        </a>
+    <nav className="sticky top-0 z-40 h-12 bg-black/80 backdrop-blur-[20px] backdrop-saturate-[1.8] text-white">
+      <div className="max-w-[1120px] mx-auto h-full px-6 flex items-center justify-between text-[12px]">
+        <a href="/" className="font-semibold tracking-tight">Critic 6</a>
+        <div className="flex gap-5 items-center">
+          {onNew && (
+            <button onClick={onNew} className="text-white/80 hover:text-white">
+              새 크리틱
+            </button>
+          )}
+          <a href="/history" className="text-white/80 hover:text-white">
+            내 크리틱
+          </a>
+        </div>
       </div>
     </nav>
   )
