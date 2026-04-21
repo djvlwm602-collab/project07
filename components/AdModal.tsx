@@ -80,19 +80,19 @@ export function AdModal({ open, onClose, onCancel }: Props) {
       }}
     >
       <div className="w-full max-w-sm">
-        <div className="overflow-hidden rounded-t-2xl">
+        <div className="overflow-hidden rounded-t-apple-lg">
           <AdComponent />
         </div>
 
-        <div className="bg-white p-3 flex items-center justify-between rounded-b-2xl">
-          <div className="text-xs text-neutral-500" aria-live="polite">
+        <div className="bg-white p-3 flex items-center justify-between rounded-b-apple-lg">
+          <div className="text-[12px] text-apple-text/60" aria-live="polite">
             {secondsLeft > 0 ? `${secondsLeft}초 후 건너뛰기` : "건너뛰기 가능"}
           </div>
           <button
             ref={skipBtnRef}
             onClick={skip}
             disabled={secondsLeft > 0}
-            className="px-4 py-1.5 text-sm bg-neutral-900 text-white rounded-full disabled:bg-neutral-300 disabled:cursor-not-allowed hover:bg-neutral-800 transition-colors"
+            className="px-4 py-1.5 text-[13px] bg-apple-blue text-white rounded-pill disabled:bg-apple-text/20 disabled:cursor-not-allowed hover:brightness-110 transition"
           >
             {secondsLeft > 0 ? `${secondsLeft}` : "건너뛰기 ✕"}
           </button>

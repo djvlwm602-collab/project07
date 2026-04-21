@@ -10,11 +10,11 @@ const serif = Noto_Serif_KR({
 })
 
 export const metadata: Metadata = {
-  title: "CRIT. — 현업 PO·디자인 리드의 포트폴리오 리뷰",
+  title: "CRIT. — 현업 PO·디자인 리드의 디자인 작업물 리뷰",
   description:
-    "당신의 포트폴리오를 전문가의 책상 위로. 현업 PO·디자인 리드가 당신의 작업을 들여다봅니다. 리뷰어는 직접 고르세요. 크리틱은 5분이면 도착합니다.",
+    "당신의 디자인 작업물을 전문가의 책상 위로. 현업 PO·디자인 리드가 당신의 작업을 들여다봅니다. 리뷰어는 직접 고르세요. 크리틱은 5분이면 도착합니다.",
   openGraph: {
-    title: "당신의 포트폴리오를, 전문가의 책상 위로.",
+    title: "당신의 디자인 작업물을, 전문가의 책상 위로.",
     description:
       "현업 PO·디자인 리드가 당신의 작업을 들여다봅니다. 리뷰어는 직접 고르세요.",
     siteName: "CRIT.",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "CRIT. — Portfolio Review by Industry Pros",
-    description: "전문가의 책상 위에, 당신의 포트폴리오를 올려보세요.",
+    description: "전문가의 책상 위에, 당신의 디자인 작업물을 올려보세요.",
   },
 }
 

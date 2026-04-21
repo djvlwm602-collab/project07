@@ -1,23 +1,25 @@
 /**
  * Role: CRIT. 워드마크 로고 — 세리프 이탤릭, 마지막 점은 not-italic으로 강세
- * Key Features: 클릭 시 홈(/)으로, default/large 두 사이즈, aria-label 제공
+ * Key Features: 홈(/) 이동, default/large 두 사이즈, light/dark 컬러, aria-label
  * Dependencies: next/link
- * Notes: server component (Link는 server에서도 사용 가능).
+ * Notes: server component.
  */
 import Link from "next/link"
 
 type Props = {
   size?: "default" | "large"
+  color?: "dark" | "light"
   className?: string
 }
 
-export function Logo({ size = "default", className = "" }: Props) {
-  const sizeClass = size === "large" ? "text-5xl md:text-6xl" : "text-xl"
+export function Logo({ size = "default", color = "dark", className = "" }: Props) {
+  const sizeClass = size === "large" ? "text-5xl md:text-6xl" : "text-[17px]"
+  const colorClass = color === "light" ? "text-white" : "text-apple-text"
   return (
     <Link
       href="/"
       aria-label="CRIT. 홈으로"
-      className={`font-serif italic tracking-tight text-neutral-900 hover:opacity-80 transition-opacity ${sizeClass} ${className}`}
+      className={`font-serif italic tracking-tight hover:opacity-80 transition-opacity ${sizeClass} ${colorClass} ${className}`}
     >
       CRIT<span className="not-italic">.</span>
     </Link>

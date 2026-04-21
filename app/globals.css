@@ -11,9 +11,11 @@ body {
 
 body {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, "Helvetica Neue", sans-serif;
-  color: #111;
-  background: #fff;
+    "SF Pro Display", "SF Pro Text", system-ui, "Helvetica Neue", sans-serif;
+  color: #1d1d1f;
+  background: #ffffff;
+  /* Apple: body 자간을 살짝 음수로 타이트하게 (17px 기준 -0.374px) */
+  letter-spacing: -0.374px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
