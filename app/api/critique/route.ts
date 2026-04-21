@@ -1,5 +1,5 @@
 /**
- * Role: /api/critique POST 엔드포인트 — 게이트키퍼 검증 후 6명(또는 단일) 페르소나를 병렬 SSE 스트리밍
+ * Role: /api/critique POST 엔드포인트 — 게이트키퍼 검증 후 선택된 리뷰어를 병렬 SSE 스트리밍
  * Key Features: 입력 검증, runGatekeeper, streamPersonaResponse 병렬 호출, SSE chunk/done/error/rejected 이벤트
  * Dependencies: @/lib/personas, @/lib/gemini, @/lib/sse, @/lib/types
  * Notes: Edge runtime은 일부 SDK 비호환 가능 — Node runtime 권장 (로컬 개발 안정)
@@ -46,7 +46,7 @@ type RequestBody = {
   imageDataUrl: string
   context: string
   personaIds: PersonaId[]
-  skipGatekeeper?: boolean // 잠금 해제로 단일 페르소나 호출 시 사용 (이미 검증됨)
+  skipGatekeeper?: boolean // 잠금 해제로 단일 리뷰어 호출 시 사용 (이미 검증됨)
 }
 
 export async function POST(req: NextRequest) {
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 2. 6명(혹은 단일) 병렬 스트리밍
+        // 2. 선택된 리뷰어(단일 또는 복수) 병렬 스트리밍
         await Promise.all(
           validIds.map(async (id) => {
             const persona = getPersona(id)
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
               const final = parsePersonaResponse(buffer) as PersonaResponse
               writeSSE(controller, { type: "done", persona: id, final })
             } catch (err) {
-              // 개발 진단: 페르소나 스트림 실패 원인 추적 (production에서도 유지해 문제 재발 시 확인)
+              // 개발 진단: 리뷰어 스트림 실패 원인 추적 (production에서도 유지해 문제 재발 시 확인)
               console.error(`[critique] persona=${id} failed:`, err)
               writeSSE(controller, { type: "error", persona: id, message: humanizeError(err) })
             }

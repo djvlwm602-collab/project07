@@ -124,3 +124,13 @@ export function getPersona(id: PersonaId): Persona {
   if (!found) throw new Error(`Unknown persona id: ${id}`)
   return found
 }
+
+// 임시 로고 표기 — 실제 로고 이미지로 교체 가능. dark=true는 밝은 배경(노랑 등)에 어두운 텍스트 필요.
+export const PERSONA_LOGO: Record<PersonaId, { text: string; dark?: boolean }> = {
+  toss: { text: "toss" },
+  coupang: { text: "C" },
+  naver: { text: "N" },
+  karrot: { text: "🥕" },
+  baemin: { text: "배민" },
+  kakao: { text: "K", dark: true },
+}

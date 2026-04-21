@@ -92,14 +92,14 @@ export function AdModal({ open, onClose, onCancel }: Props) {
             ref={skipBtnRef}
             onClick={skip}
             disabled={secondsLeft > 0}
-            className="px-4 py-1.5 text-[13px] bg-apple-blue text-white rounded-apple disabled:bg-apple-text/20 disabled:cursor-not-allowed hover:brightness-110 transition"
+            className="px-4 py-1.5 text-[13px] bg-apple-blue text-white rounded-pill disabled:bg-apple-text/20 disabled:cursor-not-allowed hover:brightness-110 transition"
           >
             {secondsLeft > 0 ? `${secondsLeft}` : "건너뛰기 ✕"}
           </button>
         </div>
 
-        <p className="text-[10px] text-white/50 text-center mt-2">
-          * Critic 6의 가상 광고입니다.
+        <p className="text-[10px] text-white/60 text-center mt-2">
+          * CRIT.의 가상 광고입니다.
         </p>
       </div>
     </div>

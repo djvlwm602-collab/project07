@@ -1,8 +1,9 @@
 /**
- * Role: 이미지 업로드 + 맥락 입력 UI (Apple 스타일, 중앙 정렬)
- * Key Features: drag-and-drop, file validation, image resize preview, context textarea (max 200), Apple Blue primary CTA
+ * Role: 디자인 작업물 업로드 + 맥락 입력 UI (Apple 톤, 중앙 정렬)
+ * Key Features: drag-and-drop, file validation, image resize preview, context textarea (max 200),
+ *               Apple Blue pill CTA, apple-xl 드롭존 radius, 포커스 apple-blue ring
  * Dependencies: lib/image (resizeImage, validateImageFile, ImageValidationError)
- * Notes: 클라이언트 컴포넌트. 라이트 그레이 배경 위에서 화이트 카드처럼 보이도록 구성.
+ * Notes: 클라이언트 컴포넌트. 크리틱 페이지 idle 모드에서 렌더.
  */
 "use client"
 
@@ -58,8 +59,8 @@ export function UploadZone({ onSubmit, disabled }: Props) {
   return (
     <div className="max-w-xl mx-auto px-6 py-16 md:py-20">
       <div className="text-center mb-10">
-        <h1 className="text-[28px] md:text-[32px] font-semibold leading-apple-section tracking-[-0.003em] text-apple-text mb-2">
-          디자인을 올려주세요
+        <h1 className="text-[28px] md:text-[32px] font-bold leading-apple-section tracking-[-0.003em] text-apple-text mb-2">
+          디자인 작업물을 올려주세요
         </h1>
         <p className="text-[14px] text-apple-text/55">
           PNG · JPG · WebP · 최대 5MB
@@ -73,10 +74,10 @@ export function UploadZone({ onSubmit, disabled }: Props) {
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={`block rounded-apple-lg border-2 border-dashed p-10 text-center cursor-pointer transition-colors ${
+        className={`block rounded-apple-xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors bg-white ${
           dragOver
-            ? "border-apple-blue bg-white"
-            : "border-apple-text/15 bg-white hover:border-apple-text/25"
+            ? "border-apple-blue"
+            : "border-apple-text/15 hover:border-apple-text/25"
         }`}
       >
         <input
@@ -89,7 +90,11 @@ export function UploadZone({ onSubmit, disabled }: Props) {
         />
         {previewUrl ? (
           <div>
-            <img src={previewUrl} alt="" className="max-h-64 mx-auto mb-4 rounded-apple" />
+            <img
+              src={previewUrl}
+              alt=""
+              className="max-h-64 mx-auto mb-4 rounded-apple-lg"
+            />
             <p className="text-[13px] text-apple-text/55">다른 파일 선택</p>
           </div>
         ) : (
@@ -128,7 +133,7 @@ export function UploadZone({ onSubmit, disabled }: Props) {
       <button
         onClick={submit}
         disabled={!dataUrl || disabled}
-        className="w-full mt-6 py-3 bg-apple-blue text-white text-[17px] font-normal rounded-apple disabled:bg-apple-text/15 disabled:cursor-not-allowed hover:brightness-110 transition"
+        className="w-full mt-6 py-3.5 bg-apple-blue text-white text-[17px] font-normal rounded-pill disabled:bg-apple-text/15 disabled:cursor-not-allowed hover:brightness-110 transition"
       >
         크리틱 받기
       </button>

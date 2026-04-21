@@ -11,6 +11,7 @@ import { UploadZone } from "@/components/UploadZone"
 import { ResultGrid } from "@/components/ResultGrid"
 import { ErrorScreen } from "@/components/ErrorScreen"
 import { AdModal } from "@/components/AdModal"
+import { Logo } from "@/components/Logo"
 import { ALL_PERSONA_IDS } from "@/lib/personas"
 import {
   saveCurrentSession,
@@ -55,7 +56,7 @@ export default function CritiquePage() {
     if (restored) {
       setSession(restored)
       setMode("result")
-      // 진행 중이던 페르소나 재호출
+      // 진행 중이던 리뷰어 재호출
       if (restored.inFlightIds.length > 0) {
         callPersonas(restored, restored.inFlightIds, /* skipGatekeeper */ true)
       }
@@ -181,7 +182,7 @@ export default function CritiquePage() {
           }
         }
       } catch (err) {
-        // 네트워크/서버 에러: in-flight 페르소나를 모두 error로 마킹하고 result 화면으로 진입
+        // 네트워크/서버 에러: in-flight 리뷰어를 모두 error로 마킹하고 result 화면으로 진입
         const message = err instanceof Error ? err.message : "네트워크 오류"
         setSession((prev) => {
           if (!prev) return prev
@@ -242,7 +243,7 @@ export default function CritiquePage() {
       <main className="min-h-screen bg-apple-gray flex items-center justify-center">
         <div className="text-center">
           <div className="text-[28px] font-semibold tracking-[-0.003em] text-apple-text mb-2">
-            디자인 분석 중…
+            작업을 들여다보는 중…
           </div>
           <div className="text-[15px] text-apple-text/60">잠시만 기다려주세요</div>
         </div>
@@ -254,12 +255,20 @@ export default function CritiquePage() {
     <main className="min-h-screen bg-apple-gray">
       <Nav onNew={reset} />
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {session && (
-          <div className="mb-8">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-apple-text/50 mb-1.5">맥락</p>
-            <p className="text-[15px] text-apple-text/85">{session.context || "(없음)"}</p>
-          </div>
-        )}
+        <header className="mb-10">
+          <h1 className="text-[32px] md:text-[40px] font-bold leading-apple-section tracking-[-0.003em] text-apple-text mb-3">
+            크리틱 결과
+          </h1>
+          {session?.context ? (
+            <p className="text-[17px] text-apple-text/70 leading-apple-body">
+              {session.context}
+            </p>
+          ) : (
+            <p className="text-[15px] text-apple-text/50 italic">
+              맥락 없이 올린 작업물이에요
+            </p>
+          )}
+        </header>
         <ResultGrid states={cardStates} onUnlock={requestUnlock} />
       </div>
       <AdModal open={adState.open} onClose={onAdComplete} onCancel={onAdCancel} />
@@ -270,15 +279,15 @@ export default function CritiquePage() {
 function Nav({ onNew }: { onNew?: () => void }) {
   return (
     <nav className="sticky top-0 z-40 h-12 bg-black/80 backdrop-blur-[20px] backdrop-saturate-[1.8] text-white">
-      <div className="max-w-[1120px] mx-auto h-full px-6 flex items-center justify-between text-[12px]">
-        <a href="/" className="font-semibold tracking-tight">Critic 6</a>
-        <div className="flex gap-5 items-center">
+      <div className="max-w-[1120px] mx-auto h-full px-6 flex items-center justify-between">
+        <Logo color="light" />
+        <div className="flex gap-5 items-center text-[12px]">
           {onNew && (
-            <button onClick={onNew} className="text-white/80 hover:text-white">
+            <button onClick={onNew} className="text-white/80 hover:text-white transition-colors">
               새 크리틱
             </button>
           )}
-          <a href="/history" className="text-white/80 hover:text-white">
+          <a href="/history" className="text-white/80 hover:text-white transition-colors">
             내 크리틱
           </a>
         </div>

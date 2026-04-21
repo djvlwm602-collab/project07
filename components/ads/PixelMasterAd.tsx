@@ -1,5 +1,5 @@
 /**
- * Role: Pixel Master (시니어 디자인 프로그램) 패러디 광고 인터스티셜 컴포넌트 (280px 높이)
+ * Role: Pixel Master (Pro Design Program) 패러디 광고 인터스티셜 컴포넌트 (280px 높이)
  * Key Features: 추천사 슬라이드 캐러셀, CSS keyframes 애니메이션 (슬라이드, 글로우)
  * Dependencies: 없음 (순수 JSX + inline style)
  * Notes: server component (정적 마크업) — 'use client' 금지. keyframe 이름 prefix `pm-`로 충돌 방지. CSS keyframe 값은 디자인 의도이므로 수정 금지.
@@ -48,7 +48,7 @@ export function PixelMasterAd() {
             <div className="font-serif text-lg tracking-wide" style={{ color: "#d4af37", animation: "pm-glow 3s infinite" }}>
               PIXEL MASTER
             </div>
-            <div className="text-[10px] opacity-50 tracking-widest uppercase mt-0.5">Senior Design Program</div>
+            <div className="text-[10px] opacity-50 tracking-widest uppercase mt-0.5">Pro Design Program</div>
           </div>
           <div className="text-[10px] opacity-50 tracking-wide">EST. 2019</div>
         </div>
