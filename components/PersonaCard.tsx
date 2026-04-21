@@ -22,7 +22,7 @@ export function PersonaCard({ state, onUnlockClick }: Props) {
 
   return (
     <div
-      className={`relative border border-neutral-200 bg-white p-5 min-h-[300px] flex flex-col ${
+      className={`relative border border-neutral-200 bg-white p-5 min-h-[300px] flex flex-col overflow-hidden ${
         isLocked ? "select-none" : "animate-blur-in"
       }`}
     >
@@ -102,9 +102,9 @@ function Section({ label, items }: { label: string; items?: string[] }) {
 
 function ErrorView({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center">
+    <div className="flex flex-col items-center justify-center h-full text-center px-2">
       <p className="text-sm text-neutral-500 mb-3">응답을 받을 수 없었어요</p>
-      <p className="text-xs text-neutral-400">{message}</p>
+      <p className="text-xs text-neutral-400 break-words max-w-full leading-relaxed">{message}</p>
     </div>
   )
 }

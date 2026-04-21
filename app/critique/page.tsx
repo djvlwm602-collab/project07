@@ -67,24 +67,31 @@ export default function CritiquePage() {
     if (session) saveCurrentSession(session)
   }, [session])
 
-  // 카드 상태 도출
+  // 카드 상태 도출 — 세션의 orderedIds 우선 (잠금해제된 2개가 상단 고정), 없으면 기본 순서
+  const renderOrder: PersonaId[] = session?.orderedIds ?? ALL_PERSONA_IDS
   const cardStates: PersonaCardState[] = session
-    ? ALL_PERSONA_IDS.map((id) => {
+    ? renderOrder.map((id) => {
         const isUnlocked = session.unlockedIds.includes(id)
         const isInFlight = session.inFlightIds.includes(id)
         const response = session.responses[id]
+        const errorMsg = session.errors?.[id]
         let status: PersonaCardState["status"]
+        // 에러가 있고 실제 응답 내용이 없으면 error 카드로 표시 (무한 로딩 방지)
         if (!isUnlocked) status = "locked"
+        else if (errorMsg && !response) status = "error"
         else if (response) status = "unlocked-done"
         else if (isInFlight) status = "unlocked-streaming"
         else status = "unlocked-loading"
-        return { id, status, content: response }
+        return { id, status, content: response, error: errorMsg }
       })
     : []
 
   const submit = useCallback(async ({ dataUrl, context }: { dataUrl: string; context: string }) => {
     const id = makeId()
     const initialUnlocked = pickInitialUnlocked()
+    // 잠금 해제 2개를 앞에, 나머지를 뒤에. 이 순서는 세션 내내 고정되어 잠금 해제 시 카드 이동 없음
+    const rest = ALL_PERSONA_IDS.filter((pid) => !initialUnlocked.includes(pid))
+    const orderedIds: PersonaId[] = [...initialUnlocked, ...rest]
     const newSession: CritiqueSession = {
       id,
       imageUrl: dataUrl,
@@ -93,6 +100,7 @@ export default function CritiquePage() {
       unlockedIds: initialUnlocked,
       responses: {},
       inFlightIds: [...initialUnlocked],
+      orderedIds,
     }
     setSession(newSession)
     setMode("submitting")
@@ -165,14 +173,25 @@ export default function CritiquePage() {
               return {
                 ...prev,
                 inFlightIds: prev.inFlightIds.filter((p) => p !== id),
-                responses: prev.responses,
+                errors: { ...(prev.errors ?? {}), [id]: event.message },
               }
             })
+            // 에러만 오고 chunk/done이 없을 때도 result 화면으로 전환 — submitting에 갇히는 버그 방지
+            setMode((m) => (m === "submitting" ? "result" : m))
           }
         }
       } catch (err) {
-        // 네트워크/서버 에러: in-flight 모두 비우기
-        setSession((prev) => prev ? { ...prev, inFlightIds: [] } : prev)
+        // 네트워크/서버 에러: in-flight 페르소나를 모두 error로 마킹하고 result 화면으로 진입
+        const message = err instanceof Error ? err.message : "네트워크 오류"
+        setSession((prev) => {
+          if (!prev) return prev
+          const nextErrors = { ...(prev.errors ?? {}) }
+          for (const pid of prev.inFlightIds) {
+            if (!prev.responses[pid]) nextErrors[pid] = message
+          }
+          return { ...prev, inFlightIds: [], errors: nextErrors }
+        })
+        setMode((m) => (m === "submitting" ? "result" : m))
       }
     },
     [mode]

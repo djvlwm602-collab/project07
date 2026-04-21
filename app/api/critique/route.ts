@@ -20,6 +20,28 @@ import type { PersonaId, PersonaResponse } from "@/lib/types"
 export const runtime = "nodejs"
 export const maxDuration = 60
 
+// Gemini SDK 에러 원문은 URL·스택이 섞여 길기 때문에 카드에 그대로 뿌리면 UI가 깨짐
+// 대표적인 케이스만 사용자 친화적 한국어로 매핑하고 나머지는 짧게 잘라 내보냄
+function humanizeError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err)
+  const lower = raw.toLowerCase()
+  if (raw.includes("429") || lower.includes("quota") || lower.includes("rate limit") || lower.includes("too many")) {
+    return "Gemini API 일일 한도를 초과했어요. 잠시 후 다시 시도해 주세요."
+  }
+  if (lower.includes("timeout") || lower.includes("timed out") || lower.includes("deadline")) {
+    return "응답 시간이 너무 오래 걸려요. 다시 시도해 주세요."
+  }
+  if (lower.includes("safety") || lower.includes("blocked")) {
+    return "안전 정책에 의해 응답이 차단됐어요."
+  }
+  if (raw.includes("401") || raw.includes("403") || lower.includes("api key")) {
+    return "API 키 인증에 실패했어요. 환경 설정을 확인해 주세요."
+  }
+  // 기본: 첫 줄만, 최대 120자
+  const firstLine = raw.split("\n")[0].trim()
+  return firstLine.length > 120 ? firstLine.slice(0, 117) + "…" : firstLine
+}
+
 type RequestBody = {
   imageDataUrl: string
   context: string
@@ -85,8 +107,9 @@ export async function POST(req: NextRequest) {
               const final = parsePersonaResponse(buffer) as PersonaResponse
               writeSSE(controller, { type: "done", persona: id, final })
             } catch (err) {
-              const message = err instanceof Error ? err.message : "Unknown error"
-              writeSSE(controller, { type: "error", persona: id, message })
+              // 개발 진단: 페르소나 스트림 실패 원인 추적 (production에서도 유지해 문제 재발 시 확인)
+              console.error(`[critique] persona=${id} failed:`, err)
+              writeSSE(controller, { type: "error", persona: id, message: humanizeError(err) })
             }
           })
         )
@@ -94,6 +117,8 @@ export async function POST(req: NextRequest) {
         controller.close()
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown server error"
+        // 개발 진단: 게이트키퍼/스트림 setup 실패 등 외곽 에러
+        console.error(`[critique] top-level error:`, err)
         controller.enqueue(
           new TextEncoder().encode(`data: ${JSON.stringify({ type: "error", persona: "unknown", message })}\n\n`)
         )

@@ -17,7 +17,7 @@ type Props = {
 // 6개 페르소나 카드를 그리드로 렌더하고 각 카드의 잠금 해제 클릭을 부모로 전달
 export function ResultGrid({ states, onUnlock }: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {states.map((state) => (
         <PersonaCard
           key={state.id}

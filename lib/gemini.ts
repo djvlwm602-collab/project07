@@ -4,32 +4,33 @@
  * Dependencies: @google/generative-ai, partial-json, ./types
  * Notes: 네트워크 호출 함수(stream/gatekeeper)는 단위 테스트 대상이 아님 — 통합 테스트에서 모킹
  */
-import { GoogleGenerativeAI, type GenerationConfig } from "@google/generative-ai"
+import { GoogleGenerativeAI, SchemaType, type GenerationConfig, type ResponseSchema } from "@google/generative-ai"
 import { parse as parsePartialJson, Allow } from "partial-json"
 import type { Persona, PersonaResponse, GatekeeperResult } from "./types"
 
-export const PERSONA_RESPONSE_SCHEMA = {
-  type: "object",
+// SDK의 SchemaType enum을 사용해야 responseSchema가 실제로 적용됨 (string 리터럴로는 무시됨)
+export const PERSONA_RESPONSE_SCHEMA: ResponseSchema = {
+  type: SchemaType.OBJECT,
   properties: {
-    oneliner: { type: "string", description: "페르소나 톤이 가장 잘 드러나는 한 마디 (15~30자)" },
-    strengths: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 3 },
-    concerns: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 3 },
-    suggestions: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 3 },
+    oneliner: { type: SchemaType.STRING, description: "페르소나 톤이 가장 잘 드러나는 한 마디 (15~30자)" },
+    strengths: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
+    concerns: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
+    suggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, minItems: 2, maxItems: 3 },
   },
   required: ["oneliner", "strengths", "concerns", "suggestions"],
-} as const
+}
 
-export const GATEKEEPER_RESPONSE_SCHEMA = {
-  type: "object",
+export const GATEKEEPER_RESPONSE_SCHEMA: ResponseSchema = {
+  type: SchemaType.OBJECT,
   properties: {
-    valid: { type: "boolean" },
-    category: { type: "string", enum: ["ui", "graphic", "wireframe", "other"] },
-    confidence: { type: "string", enum: ["high", "medium", "low"] },
-    reason: { type: "string" },
-    suggestion: { type: "string" },
+    valid: { type: SchemaType.BOOLEAN },
+    category: { type: SchemaType.STRING, enum: ["ui", "graphic", "wireframe", "other"] },
+    confidence: { type: SchemaType.STRING, enum: ["high", "medium", "low"] },
+    reason: { type: SchemaType.STRING },
+    suggestion: { type: SchemaType.STRING },
   },
   required: ["valid"],
-} as const
+}
 
 export type PersonaPrompt = {
   systemInstruction: string
@@ -54,10 +55,15 @@ ${persona.focusAreas.map(a => `- ${a}`).join("\n")}
 - 다른 회사 페르소나 흉내 (당신은 ${persona.company} 사람입니다)
 - 영어 표현 남용 (자연스러운 곳만)
 
-안전장치:
-- 이미지가 디자인 작업물로 보기 어렵다면, 솔직하게
-  "이 이미지에서 제가 크리틱할 부분을 찾기 어려워요"라고 답하고
-  구체적인 비평을 억지로 하지 마세요.`
+반드시 아래 JSON 구조로만 답하세요. 다른 키를 추가하거나 변형하지 마세요:
+{
+  "oneliner": "페르소나 톤이 드러나는 한 마디 (15~30자)",
+  "strengths": ["강점1", "강점2", "강점3"],
+  "concerns": ["우려1", "우려2", "우려3"],
+  "suggestions": ["제안1", "제안2", "제안3"]
+}
+- 각 배열은 2~3개 요소
+- 모든 필드는 필수. 크리틱이 어려워도 oneliner에 소감을 넣고 나머지 배열은 "이미지가 명확치 않아 구체적 평가는 어렵다" 같은 내용으로라도 채우세요.`
 
   const userText = `맥락: ${userContext || "(없음)"}`
   return { systemInstruction, userText }
@@ -81,17 +87,24 @@ export function getGenAI() {
   return new GoogleGenerativeAI(apiKey)
 }
 
+// responseSchema를 같이 전달해야 flash-lite 같은 경량 모델도 스키마를 강제로 따름
 export const PERSONA_GENERATION_CONFIG: GenerationConfig = {
   temperature: 0.85,
   maxOutputTokens: 600,
   responseMimeType: "application/json",
+  responseSchema: PERSONA_RESPONSE_SCHEMA,
 }
 
 export const GATEKEEPER_GENERATION_CONFIG: GenerationConfig = {
   temperature: 0.2,
   maxOutputTokens: 200,
   responseMimeType: "application/json",
+  responseSchema: GATEKEEPER_RESPONSE_SCHEMA,
 }
+
+// 모델 이름을 환경변수로 분리 — 무료 티어 한도 우회용 모델 전환(lite) 및 유료 전환 시 flash 복원을 쉽게 하기 위함
+// 기본값은 무료 티어에서 한도가 상대적으로 넉넉한 flash-lite (needs verification: 정확한 RPD는 공식 문서 확인 필요)
+export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite"
 
 export type GeminiImageInput = {
   mimeType: string
@@ -116,7 +129,7 @@ export async function* streamPersonaResponse(
   const genAI = getGenAI()
   const { systemInstruction, userText } = buildPersonaPrompt(persona, userContext)
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     systemInstruction,
     generationConfig: PERSONA_GENERATION_CONFIG,
   })
@@ -158,7 +171,7 @@ JSON으로 답하세요.
 - confidence가 medium 이상이면 valid 우선.`
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: GEMINI_MODEL,
     systemInstruction,
     generationConfig: GATEKEEPER_GENERATION_CONFIG,
   })
