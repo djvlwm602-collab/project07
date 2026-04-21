@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { HistoryList } from "@/components/HistoryList"
+import { Logo } from "@/components/Logo"
 import { loadHistory } from "@/lib/storage"
 import type { CritiqueSession } from "@/lib/types"
 
@@ -23,13 +24,7 @@ export default function HistoryPage() {
     <main className="min-h-screen bg-apple-gray">
       <nav className="sticky top-0 z-40 h-12 bg-black/80 backdrop-blur-[20px] backdrop-saturate-[1.8] text-white">
         <div className="max-w-[1120px] mx-auto h-full px-6 flex items-center justify-between">
-          <Link
-            href="/"
-            aria-label="CRIT. 홈으로"
-            className="font-serif italic text-[17px] tracking-tight hover:opacity-80 transition-opacity"
-          >
-            CRIT<span className="not-italic">.</span>
-          </Link>
+          <Logo color="light" />
           <Link
             href="/critique"
             className="text-[12px] text-white/80 hover:text-white transition-colors"
