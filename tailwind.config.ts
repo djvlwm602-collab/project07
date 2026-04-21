@@ -8,30 +8,27 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Apple 디자인 시스템: SF Pro 계열 → 한국어 최적화 Pretendard 우선, Mac은 SF Pro로 fallback
+        // 본문·UI: Pretendard (한국어 최적화)
         sans: [
+          "var(--font-sans)",
           "Pretendard Variable",
           "Pretendard",
           "-apple-system",
           "BlinkMacSystemFont",
-          "SF Pro Display",
-          "SF Pro Text",
           "system-ui",
-          "Helvetica Neue",
           "sans-serif",
         ],
-        // 기존 마크업 호환: font-serif를 사용하던 headline들이 그대로 동작하도록 동일 스택 매핑
+        // 헤딩: Noto Serif KR (Editorial Minimal 톤)
         serif: [
-          "Pretendard Variable",
-          "Pretendard",
-          "-apple-system",
-          "BlinkMacSystemFont",
-          "SF Pro Display",
-          "system-ui",
-          "sans-serif",
+          "var(--font-serif)",
+          "Noto Serif KR",
+          "ui-serif",
+          "Georgia",
+          "serif",
         ],
       },
       colors: {
+        // 각 리뷰어의 회사 시그니처 컬러 — 카드 좌측 3px 바에서만 포인트로 사용
         brand: {
           toss: "#0064ff",
           coupang: "#fb1d1d",
@@ -40,46 +37,6 @@ const config: Config = {
           baemin: "#2ac1bc",
           kakao: "#fee500",
         },
-        apple: {
-          black: "#000000",
-          gray: "#f5f5f7",
-          text: "#1d1d1f",
-          blue: "#0071e3",
-          link: "#0066cc",
-          "link-dark": "#2997ff",
-          "surface-1": "#272729",
-          "surface-2": "#262628",
-          "surface-3": "#28282a",
-          "surface-4": "#2a2a2d",
-          "button-active": "#ededf2",
-          "button-light": "#fafafc",
-        },
-      },
-      borderRadius: {
-        "apple-sm": "5px",
-        apple: "8px",
-        "apple-md": "11px",
-        "apple-lg": "12px",
-        pill: "980px",
-      },
-      boxShadow: {
-        // Apple 제품 카드용 소프트 디퓨즈드 섀도우 — 시스템 전체에서 유일한 공식 섀도우
-        "apple-card": "rgba(0, 0, 0, 0.22) 3px 5px 30px 0px",
-      },
-      letterSpacing: {
-        "apple-display": "-0.28px",
-        "apple-body": "-0.374px",
-        "apple-caption": "-0.224px",
-        "apple-micro": "-0.12px",
-        "apple-tile": "0.196px",
-        "apple-card-title": "0.231px",
-      },
-      lineHeight: {
-        "apple-hero": "1.07",
-        "apple-section": "1.10",
-        "apple-tile": "1.14",
-        "apple-card": "1.19",
-        "apple-body": "1.47",
       },
       keyframes: {
         "blur-in": {

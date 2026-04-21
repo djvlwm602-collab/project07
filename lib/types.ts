@@ -52,7 +52,7 @@ export type CritiqueSession = {
   unlockedIds: PersonaId[]
   responses: Partial<Record<PersonaId, PersonaResponse>>
   inFlightIds: PersonaId[]
-  // 페르소나별 실패 메시지. 스트림 에러/네트워크 실패 시 저장되어 카드가 error 상태로 전환됨
+  // 리뷰어별 실패 메시지. 스트림 에러/네트워크 실패 시 저장되어 카드가 error 상태로 전환됨
   errors?: Partial<Record<PersonaId, string>>
   // 카드 렌더 순서. 세션 생성 시 초기 잠금해제 2개를 상단에 두고 고정 — 잠금 해제해도 순서 유지
   // optional: 이전 버전 세션 호환용 (없으면 ALL_PERSONA_IDS 순서로 fallback)

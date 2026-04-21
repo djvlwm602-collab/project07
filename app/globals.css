@@ -1,4 +1,4 @@
-/* Pretendard 폰트는 app/layout.tsx 의 <link>에서 로드 (빌드 타임 @import 차단 방지) */
+/* Pretendard 폰트는 app/layout.tsx <link>에서 로드 */
 
 @tailwind base;
 @tailwind components;
@@ -10,19 +10,10 @@ body {
 }
 
 body {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Display",
-    "SF Pro Text", system-ui, "Helvetica Neue", sans-serif;
-  color: #1d1d1f;
-  background: #ffffff;
-  /* Apple: body 사이즈에도 negative tracking 적용 (17px 기준 -0.374px) */
-  letter-spacing: -0.374px;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, "Helvetica Neue", sans-serif;
+  color: #111;
+  background: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Apple display 타입: hero headline 같은 큰 텍스트에서 추가 타이트닝 */
-.apple-display {
-  letter-spacing: -0.28px;
-  line-height: 1.07;
-  font-weight: 600;
 }

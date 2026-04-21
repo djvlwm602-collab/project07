@@ -1,17 +1,38 @@
 import type { Metadata } from "next"
+import { Noto_Serif_KR } from "next/font/google"
 import "./globals.css"
 
+const serif = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-serif",
+  display: "swap",
+})
+
 export const metadata: Metadata = {
-  title: "Critic 6 — 6개 회사 페르소나의 디자인 크리틱",
+  title: "CRIT. — 현업 PO·디자인 리드의 포트폴리오 리뷰",
   description:
-    "당신의 디자인을 토스, 쿠팡, 네이버, 당근, 배민, 카카오의 PO·디자인 리드 페르소나에게 동시에 물어보세요.",
+    "당신의 포트폴리오를 전문가의 책상 위로. 현업 PO·디자인 리드가 당신의 작업을 들여다봅니다. 리뷰어는 직접 고르세요. 크리틱은 5분이면 도착합니다.",
+  openGraph: {
+    title: "당신의 포트폴리오를, 전문가의 책상 위로.",
+    description:
+      "현업 PO·디자인 리드가 당신의 작업을 들여다봅니다. 리뷰어는 직접 고르세요.",
+    siteName: "CRIT.",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CRIT. — Portfolio Review by Industry Pros",
+    description: "전문가의 책상 위에, 당신의 포트폴리오를 올려보세요.",
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={serif.variable}>
       <head>
-        {/* Pretendard: 빌드 타임 @import 대신 런타임 <link>로 로드 (빌드 hang 방지) */}
+        {/* Pretendard: 빌드 타임 @import 대신 런타임 <link>로 로드 */}
         <link
           rel="preconnect"
           href="https://cdn.jsdelivr.net"

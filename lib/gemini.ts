@@ -1,5 +1,5 @@
 /**
- * Role: Gemini API 래퍼 — 페르소나 프롬프트 빌더, 부분 JSON 파서, 스트리밍/게이트키퍼 호출
+ * Role: Gemini API 래퍼 — 리뷰어(Persona) 프롬프트 빌더, 부분 JSON 파서, 스트리밍/게이트키퍼 호출
  * Key Features: buildPersonaPrompt, parsePersonaResponse, streamPersonaResponse, runGatekeeper
  * Dependencies: @google/generative-ai, partial-json, ./types
  * Notes: 네트워크 호출 함수(stream/gatekeeper)는 단위 테스트 대상이 아님 — 통합 테스트에서 모킹
@@ -12,7 +12,7 @@ import type { Persona, PersonaResponse, GatekeeperResult } from "./types"
 export const PERSONA_RESPONSE_SCHEMA: ResponseSchema = {
   type: SchemaType.OBJECT,
   properties: {
-    oneliner: { type: SchemaType.STRING, description: "페르소나 톤이 가장 잘 드러나는 한 마디 (15~30자)" },
+    oneliner: { type: SchemaType.STRING, description: "리뷰어 톤이 가장 잘 드러나는 한 마디 (15~30자)" },
     strengths: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
     concerns: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
     suggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
@@ -37,7 +37,7 @@ export type PersonaPrompt = {
   userText: string
 }
 
-// 역할: 페르소나 정보를 시스템 프롬프트로 변환 — 모델이 일관된 톤·관점을 유지하도록 강제
+// 역할: 리뷰어(Persona) 정보를 시스템 프롬프트로 변환 — 모델이 일관된 톤·관점을 유지하도록 강제
 export function buildPersonaPrompt(persona: Persona, userContext: string): PersonaPrompt {
   const systemInstruction = `당신은 ${persona.company}의 ${persona.role}입니다. 이름은 가상의 인물입니다.
 다음 디자인 작업물을 보고 ${persona.company} 관점에서 솔직한 크리틱을 해주세요.
@@ -52,12 +52,12 @@ ${persona.focusAreas.map(a => `- ${a}`).join("\n")}
 
 피해야 할 것:
 - 일반론적 얘기 ("디자인이 좋네요")
-- 다른 회사 페르소나 흉내 (당신은 ${persona.company} 사람입니다)
+- 다른 회사 리뷰어 흉내 (당신은 ${persona.company} 사람입니다)
 - 영어 표현 남용 (자연스러운 곳만)
 
 반드시 아래 JSON 구조로만 답하세요. 다른 키를 추가하거나 변형하지 마세요:
 {
-  "oneliner": "페르소나 톤이 드러나는 한 마디 (15~30자)",
+  "oneliner": "리뷰어 톤이 드러나는 한 마디 (15~30자)",
   "strengths": ["강점1", "강점2", "강점3"],
   "concerns": ["우려1", "우려2", "우려3"],
   "suggestions": ["제안1", "제안2", "제안3"]
@@ -120,7 +120,7 @@ export function extractImageInput(dataUrl: string): GeminiImageInput {
   return { mimeType: match[1], data: match[2] }
 }
 
-// 역할: 페르소나 시스템 프롬프트 + 이미지로 Gemini 스트리밍 호출 — 청크 단위 텍스트 yield
+// 역할: 리뷰어 시스템 프롬프트 + 이미지로 Gemini 스트리밍 호출 — 청크 단위 텍스트 yield
 export async function* streamPersonaResponse(
   persona: Persona,
   userContext: string,
