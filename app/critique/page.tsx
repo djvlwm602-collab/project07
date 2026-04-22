@@ -59,7 +59,7 @@ export default function CritiquePage() {
       setMode("result")
       // 진행 중이던 리뷰어 재호출
       if (restored.inFlightIds.length > 0) {
-        callPersonas(restored, restored.inFlightIds, /* skipGatekeeper */ true)
+        callPersonas(restored, restored.inFlightIds)
       }
     }
   }, [])
@@ -107,12 +107,12 @@ export default function CritiquePage() {
     setSession(newSession)
     setMode("submitting")
 
-    // 게이트키퍼 + 초기 2명 호출
-    await callPersonas(newSession, initialUnlocked, /* skipGatekeeper */ false)
+    // 초기 리뷰어 호출 (게이트키퍼 제거됨)
+    await callPersonas(newSession, initialUnlocked)
   }, [])
 
   const callPersonas = useCallback(
-    async (currentSession: CritiqueSession, ids: PersonaId[], skipGatekeeper: boolean) => {
+    async (currentSession: CritiqueSession, ids: PersonaId[]) => {
       try {
         const res = await fetch("/api/critique", {
           method: "POST",
@@ -121,7 +121,6 @@ export default function CritiquePage() {
             imageDataUrl: currentSession.imageUrl,
             context: currentSession.context,
             personaIds: ids,
-            skipGatekeeper,
           }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -213,7 +212,7 @@ export default function CritiquePage() {
       inFlightIds: [...session.inFlightIds, id],
     }
     setSession(newSession)
-    callPersonas(newSession, [id], /* skipGatekeeper */ true)
+    callPersonas(newSession, [id])
   }
 
   const onAdCancel = () => setAdState({ open: false, pendingId: null })

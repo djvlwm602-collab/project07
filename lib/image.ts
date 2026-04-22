@@ -42,7 +42,15 @@ export function validateImageFile(file: File): void {
  * 브라우저 환경에서만 동작.
  */
 export async function resizeImage(file: File): Promise<{ dataUrl: string; width: number; height: number }> {
-  const bitmap = await createImageBitmap(file)
+  let bitmap: ImageBitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    throw new ImageValidationError(
+      "이미지 파일이 손상됐어요. 다른 파일로 시도해 주세요.",
+      "CORRUPT"
+    )
+  }
   const { width: ow, height: oh } = bitmap
 
   if (ow < MIN_DIMENSION || oh < MIN_DIMENSION) {

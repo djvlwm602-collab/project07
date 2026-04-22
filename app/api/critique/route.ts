@@ -1,19 +1,18 @@
 /**
- * Role: /api/critique POST 엔드포인트 — 게이트키퍼 검증 후 선택된 리뷰어를 병렬 SSE 스트리밍
- * Key Features: 입력 검증, runGatekeeper, streamPersonaResponse 병렬 호출, SSE chunk/done/error/rejected 이벤트
+ * Role: /api/critique POST 엔드포인트 — 선택된 리뷰어를 병렬 SSE 스트리밍 (게이트키퍼 제거됨)
+ * Key Features: 입력 검증, streamPersonaResponse 병렬 호출, SSE chunk/done/error 이벤트
  * Dependencies: @/lib/personas, @/lib/gemini, @/lib/sse, @/lib/types
- * Notes: Edge runtime은 일부 SDK 비호환 가능 — Node runtime 권장 (로컬 개발 안정)
+ * Notes: Edge runtime은 일부 SDK 비호환 가능 — Node runtime 권장. 이미지 유효성은 클라이언트에서 검증.
  */
 // app/api/critique/route.ts
 import { NextRequest } from "next/server"
 import { ALL_PERSONA_IDS, getPersona } from "@/lib/personas"
 import {
   extractImageInput,
-  runGatekeeper,
   streamPersonaResponse,
   parsePersonaResponse,
 } from "@/lib/gemini"
-import { mockGatekeeper, mockPersonaStream } from "@/lib/gemini-mock"
+import { mockPersonaStream } from "@/lib/gemini-mock"
 import { writeSSE, SSE_HEADERS } from "@/lib/sse"
 import type { PersonaId, PersonaResponse } from "@/lib/types"
 
@@ -51,7 +50,6 @@ type RequestBody = {
   imageDataUrl: string
   context: string
   personaIds: PersonaId[]
-  skipGatekeeper?: boolean // 잠금 해제로 단일 리뷰어 호출 시 사용 (이미 검증됨)
 }
 
 export async function POST(req: NextRequest) {
@@ -62,7 +60,7 @@ export async function POST(req: NextRequest) {
     return new Response("Invalid JSON", { status: 400 })
   }
 
-  const { imageDataUrl, context, personaIds, skipGatekeeper } = body
+  const { imageDataUrl, context, personaIds } = body
   if (!imageDataUrl || !Array.isArray(personaIds) || personaIds.length === 0) {
     return new Response("Missing fields", { status: 400 })
   }
@@ -85,23 +83,9 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        // 1. 게이트키퍼 (skip 가능) — MOCK 모드면 실제 호출 우회
-        if (!skipGatekeeper) {
-          const gate = USE_MOCK
-            ? await mockGatekeeper()
-            : await runGatekeeper(context, imageInput)
-          if (!gate.valid) {
-            writeSSE(controller, {
-              type: "rejected",
-              reason: gate.reason ?? "이 이미지로는 디자인 크리틱이 어려워요.",
-              suggestion: gate.suggestion,
-            })
-            controller.close()
-            return
-          }
-        }
-
-        // 2. 선택된 리뷰어(단일 또는 복수) 병렬 스트리밍 — MOCK 모드면 더미 스트림
+        // 게이트키퍼 제거됨 — 이미지 유효성은 클라이언트(lib/image.ts + UploadZone)에서 검증.
+        // 의미적 부적합(디자인 아닌 이미지)은 각 리뷰어 시스템 프롬프트의 안전장치로 처리.
+        // 선택된 리뷰어 병렬 스트리밍 — MOCK 모드면 더미 스트림
         await Promise.all(
           validIds.map(async (id) => {
             const persona = getPersona(id)
