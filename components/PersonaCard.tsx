@@ -88,6 +88,16 @@ export function PersonaCard({ state, onUnlockClick }: Props) {
 
 function Avatar({ persona }: { persona: Persona }) {
   const logo = PERSONA_LOGO[persona.id]
+  if (logo.src) {
+    return (
+      <div
+        className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-white shadow-sm border border-apple-text/5 overflow-hidden"
+        aria-label={`${persona.company} 로고`}
+      >
+        <img src={logo.src} alt="" className="w-8 h-8 object-contain" />
+      </div>
+    )
+  }
   return (
     <div
       className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[13px] leading-none"

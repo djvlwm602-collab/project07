@@ -125,12 +125,14 @@ export function getPersona(id: PersonaId): Persona {
   return found
 }
 
-// 임시 로고 표기 — 실제 로고 이미지로 교체 가능. dark=true는 밝은 배경(노랑 등)에 어두운 텍스트 필요.
-export const PERSONA_LOGO: Record<PersonaId, { text: string; dark?: boolean }> = {
-  toss: { text: "toss" },
-  coupang: { text: "C" },
-  naver: { text: "N" },
-  karrot: { text: "🥕" },
-  baemin: { text: "배민" },
-  kakao: { text: "K", dark: true },
+// 리뷰어 로고 표기
+// - src: public/logos/{id}.svg 있으면 이미지 우선, 없으면 text 폴백(이니셜/이모지)
+// - dark: 이미지 없이 text 폴백일 때 밝은 배경(노랑 등)에 어두운 글씨 필요한지 지정
+export const PERSONA_LOGO: Record<PersonaId, { src?: string; text: string; dark?: boolean }> = {
+  toss: { src: "/logos/toss.svg", text: "toss" },
+  coupang: { src: "/logos/coupang.svg", text: "C" },
+  naver: { src: "/logos/naver.svg", text: "N" },
+  karrot: { src: "/logos/karrot.svg", text: "🥕" },
+  baemin: { src: "/logos/baemin.svg", text: "배민" },
+  kakao: { src: "/logos/kakao.svg", text: "K", dark: true },
 }
