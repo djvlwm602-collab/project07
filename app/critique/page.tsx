@@ -1,12 +1,14 @@
 /**
- * Role: 크리틱 페이지 클라이언트 컴포넌트 — 업로드/제출/스트리밍/결과/잠금해제/거부 4가지 모드 통합
- * Key Features: idle/submitting/result/rejected 모드 전환, SSE 스트리밍, sessionStorage 복원, 광고 게이트 잠금해제
- * Dependencies: components/UploadZone, components/ResultGrid, components/ErrorScreen, components/AdModal, lib/personas, lib/storage, lib/sse, lib/gemini, lib/types
- * Notes: 'use client' 필수 (state/fetch/SSE). callPersonas는 useCallback([mode])로 mode를 캡처 — 의도된 stale closure 허용 (plan verbatim)
+ * Role: 크리틱 페이지 — 업로드/제출/단일-호출-스트리밍/결과/광고-해제/거부 모드 통합
+ * Key Features: idle/submitting/result/rejected 전환, SSE merged-chunk/done 파싱,
+ *               6명 리뷰어를 단일 Gemini 호출로 받아 클라이언트에 저장 → 광고 해제는 UI 블러만 제거
+ * Dependencies: components/UploadZone, ResultGrid, ErrorScreen, AdModal, Logo, LoadingStage,
+ *               lib/personas, lib/storage, lib/sse, lib/parse-merged, lib/types
+ * Notes: 'use client'. 과거 per-persona 호출 경로는 제거. 캐시 히트 플로우는 후속 커밋에서 도입.
  */
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { UploadZone } from "@/components/UploadZone"
 import { ResultGrid } from "@/components/ResultGrid"
 import { ErrorScreen } from "@/components/ErrorScreen"
@@ -21,7 +23,7 @@ import {
   appendToHistory,
 } from "@/lib/storage"
 import { readSSE } from "@/lib/sse"
-import { parsePersonaResponse } from "@/lib/gemini"
+import { parseMergedResponse } from "@/lib/parse-merged"
 import type {
   CritiqueSession,
   PersonaCardState,
@@ -48,18 +50,17 @@ export default function CritiquePage() {
     open: false,
     pendingId: null,
   })
-  // 스트리밍 중 누적 버퍼 (id별)
-  const buffersRef = useRef<Record<string, string>>({})
 
   // 마운트 시 sessionStorage 복원
   useEffect(() => {
     const restored = loadCurrentSession()
     if (restored) {
       setSession(restored)
+      // 이미 responses가 채워져 있으면 결과 화면, 아니면 재호출
+      const hasContent = Object.keys(restored.responses).length > 0
       setMode("result")
-      // 진행 중이던 리뷰어 재호출
-      if (restored.inFlightIds.length > 0) {
-        callPersonas(restored, restored.inFlightIds)
+      if (!hasContent && restored.inFlightIds.length > 0) {
+        callMerged(restored)
       }
     }
   }, [])
@@ -69,7 +70,7 @@ export default function CritiquePage() {
     if (session) saveCurrentSession(session)
   }, [session])
 
-  // 카드 상태 도출 — 세션의 orderedIds 우선 (잠금해제된 2개가 상단 고정), 없으면 기본 순서
+  // 카드 상태 도출 — 세션의 orderedIds 우선, 없으면 기본 순서
   const renderOrder: PersonaId[] = session?.orderedIds ?? ALL_PERSONA_IDS
   const cardStates: PersonaCardState[] = session
     ? renderOrder.map((id) => {
@@ -78,7 +79,6 @@ export default function CritiquePage() {
         const response = session.responses[id]
         const errorMsg = session.errors?.[id]
         let status: PersonaCardState["status"]
-        // 에러가 있고 실제 응답 내용이 없으면 error 카드로 표시 (무한 로딩 방지)
         if (!isUnlocked) status = "locked"
         else if (errorMsg && !response) status = "error"
         else if (response) status = "unlocked-done"
@@ -91,7 +91,7 @@ export default function CritiquePage() {
   const submit = useCallback(async ({ dataUrl, context }: { dataUrl: string; context: string }) => {
     const id = makeId()
     const initialUnlocked = pickInitialUnlocked()
-    // 잠금 해제 2개를 앞에, 나머지를 뒤에. 이 순서는 세션 내내 고정되어 잠금 해제 시 카드 이동 없음
+    // 잠금 해제 2개를 앞에, 나머지를 뒤에. 세션 내내 고정되어 잠금 해제 시 카드 이동 없음
     const rest = ALL_PERSONA_IDS.filter((pid) => !initialUnlocked.includes(pid))
     const orderedIds: PersonaId[] = [...initialUnlocked, ...rest]
     const newSession: CritiqueSession = {
@@ -101,118 +101,109 @@ export default function CritiquePage() {
       createdAt: Date.now(),
       unlockedIds: initialUnlocked,
       responses: {},
-      inFlightIds: [...initialUnlocked],
+      // 단일 호출이지만 UI 상태(스트리밍 중 스피너)를 위해 전체 리뷰어를 inFlight로 초기화
+      inFlightIds: [...ALL_PERSONA_IDS],
       orderedIds,
     }
     setSession(newSession)
     setMode("submitting")
-
-    // 초기 리뷰어 호출 (게이트키퍼 제거됨)
-    await callPersonas(newSession, initialUnlocked)
+    await callMerged(newSession)
   }, [])
 
-  const callPersonas = useCallback(
-    async (currentSession: CritiqueSession, ids: PersonaId[]) => {
-      try {
-        const res = await fetch("/api/critique", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            imageDataUrl: currentSession.imageUrl,
-            context: currentSession.context,
-            personaIds: ids,
-          }),
-        })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  // 6명 리뷰어를 단일 Gemini 호출로 받아와 responses에 저장. 과거 per-persona 호출 대체.
+  const callMerged = useCallback(async (currentSession: CritiqueSession) => {
+    try {
+      const res = await fetch("/api/critique", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageDataUrl: currentSession.imageUrl,
+          context: currentSession.context,
+          personaIds: ALL_PERSONA_IDS,
+        }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-        for await (const event of readSSE(res)) {
-          if (event.type === "rejected") {
-            setRejection({ reason: event.reason, suggestion: event.suggestion })
-            setMode("rejected")
-            clearCurrentSession()
-            setSession(null)
-            return
-          }
-          if (event.type === "chunk") {
-            const id = event.persona
-            buffersRef.current[id] = (buffersRef.current[id] ?? "") + event.chunk
-            const partial = parsePersonaResponse(buffersRef.current[id])
-            setSession((prev) => {
-              if (!prev) return prev
-              return {
-                ...prev,
-                responses: { ...prev.responses, [id]: partial as PersonaResponse },
-              }
-            })
-            if (mode !== "result") setMode("result")
-          }
-          if (event.type === "done") {
-            const id = event.persona
-            buffersRef.current[id] = ""
-            setSession((prev) => {
-              if (!prev) return prev
-              const next: CritiqueSession = {
-                ...prev,
-                responses: { ...prev.responses, [id]: event.final },
-                inFlightIds: prev.inFlightIds.filter((p) => p !== id),
-              }
-              // 모두 해제 + 모두 완료 시 히스토리에 저장
-              if (
-                next.unlockedIds.length === ALL_PERSONA_IDS.length &&
-                next.inFlightIds.length === 0
-              ) {
-                appendToHistory(next)
-              }
-              return next
-            })
-            setMode("result")
-          }
-          if (event.type === "error") {
-            const id = event.persona
-            setSession((prev) => {
-              if (!prev) return prev
-              return {
-                ...prev,
-                inFlightIds: prev.inFlightIds.filter((p) => p !== id),
-                errors: { ...(prev.errors ?? {}), [id]: event.message },
-              }
-            })
-            // 에러만 오고 chunk/done이 없을 때도 result 화면으로 전환 — submitting에 갇히는 버그 방지
-            setMode((m) => (m === "submitting" ? "result" : m))
-          }
+      let buffer = ""
+      for await (const event of readSSE(res)) {
+        if (event.type === "rejected") {
+          setRejection({ reason: event.reason, suggestion: event.suggestion })
+          setMode("rejected")
+          clearCurrentSession()
+          setSession(null)
+          return
         }
-      } catch (err) {
-        // 네트워크/서버 에러: in-flight 리뷰어를 모두 error로 마킹하고 result 화면으로 진입
-        const message = err instanceof Error ? err.message : "네트워크 오류"
-        setSession((prev) => {
-          if (!prev) return prev
-          const nextErrors = { ...(prev.errors ?? {}) }
-          for (const pid of prev.inFlightIds) {
-            if (!prev.responses[pid]) nextErrors[pid] = message
-          }
-          return { ...prev, inFlightIds: [], errors: nextErrors }
-        })
-        setMode((m) => (m === "submitting" ? "result" : m))
+        if (event.type === "merged-chunk") {
+          buffer += event.chunk
+          const reviewers = parseMergedResponse(buffer)
+          setSession((prev) => {
+            if (!prev) return prev
+            return { ...prev, responses: { ...prev.responses, ...reviewers } }
+          })
+          setMode((m) => (m === "submitting" ? "result" : m))
+        }
+        if (event.type === "merged-done") {
+          const reviewers = event.final.reviewers as Record<PersonaId, PersonaResponse>
+          setSession((prev) => {
+            if (!prev) return prev
+            const next: CritiqueSession = {
+              ...prev,
+              responses: { ...prev.responses, ...reviewers },
+              inFlightIds: [],
+            }
+            // 모든 리뷰어 해제 + 모두 완료 시 히스토리에 저장
+            if (
+              next.unlockedIds.length === ALL_PERSONA_IDS.length &&
+              next.inFlightIds.length === 0
+            ) {
+              appendToHistory(next)
+            }
+            return next
+          })
+          setMode("result")
+        }
+        if (event.type === "error") {
+          // merged 경로의 top-level 에러 — 전원 실패로 마킹
+          const message = event.message
+          setSession((prev) => {
+            if (!prev) return prev
+            const nextErrors = { ...(prev.errors ?? {}) }
+            for (const pid of ALL_PERSONA_IDS) {
+              if (!prev.responses[pid]) nextErrors[pid] = message
+            }
+            return { ...prev, inFlightIds: [], errors: nextErrors }
+          })
+          setMode((m) => (m === "submitting" ? "result" : m))
+        }
       }
-    },
-    [mode]
-  )
+    } catch (err) {
+      // 네트워크/서버 에러: 전원 error 마킹
+      const message = err instanceof Error ? err.message : "네트워크 오류"
+      setSession((prev) => {
+        if (!prev) return prev
+        const nextErrors = { ...(prev.errors ?? {}) }
+        for (const pid of ALL_PERSONA_IDS) {
+          if (!prev.responses[pid]) nextErrors[pid] = message
+        }
+        return { ...prev, inFlightIds: [], errors: nextErrors }
+      })
+      setMode((m) => (m === "submitting" ? "result" : m))
+    }
+  }, [])
 
   const requestUnlock = (id: PersonaId) => {
     setAdState({ open: true, pendingId: id })
   }
 
+  // 광고 시청 완료 — 이미 클라에 응답이 있으므로 서버 호출 없이 UI 블러만 제거
   const onAdComplete = () => {
     const id = adState.pendingId
     setAdState({ open: false, pendingId: null })
     if (!id || !session) return
-    const newSession: CritiqueSession = {
+    setSession({
       ...session,
       unlockedIds: [...session.unlockedIds, id],
-      inFlightIds: [...session.inFlightIds, id],
-    }
-    setSession(newSession)
-    callPersonas(newSession, [id])
+    })
   }
 
   const onAdCancel = () => setAdState({ open: false, pendingId: null })
@@ -222,7 +213,6 @@ export default function CritiquePage() {
     setSession(null)
     setRejection(null)
     setMode("idle")
-    buffersRef.current = {}
   }
 
   if (mode === "rejected" && rejection) {
