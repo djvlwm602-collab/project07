@@ -7,7 +7,8 @@
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 export const MIN_DIMENSION = 200
-export const MAX_DIMENSION = 1920
+// 1024px 상한 — Gemini 입력 토큰 절반 수준으로 감소 + 스트리밍 지연 단축
+export const MAX_DIMENSION = 1024
 export const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"] as const
 
 export class ImageValidationError extends Error {
@@ -41,7 +42,15 @@ export function validateImageFile(file: File): void {
  * 브라우저 환경에서만 동작.
  */
 export async function resizeImage(file: File): Promise<{ dataUrl: string; width: number; height: number }> {
-  const bitmap = await createImageBitmap(file)
+  let bitmap: ImageBitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    throw new ImageValidationError(
+      "이미지 파일이 손상됐어요. 다른 파일로 시도해 주세요.",
+      "CORRUPT"
+    )
+  }
   const { width: ow, height: oh } = bitmap
 
   if (ow < MIN_DIMENSION || oh < MIN_DIMENSION) {

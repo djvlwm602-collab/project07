@@ -145,7 +145,10 @@ export async function* streamPersonaResponse(
   }
 }
 
-// 역할: 업로드된 이미지가 디자인 크리틱 대상인지 검증 — 일반 사진/밈 등을 게이트에서 차단
+// @deprecated — Gemini 무료 티어 호출 절약을 위해 /api/critique에서는 더 이상 호출하지 않음.
+// 이미지 유효성은 lib/image.ts의 validateImageFile + resizeImage가 담당.
+// 의미적 부적합은 각 리뷰어 시스템 프롬프트의 안전장치로 처리됨.
+// 내부 툴/디버그에서 다시 쓸 여지가 있어 함수 본문은 보존.
 export async function runGatekeeper(
   userContext: string,
   image: GeminiImageInput

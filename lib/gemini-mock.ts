@@ -110,9 +110,26 @@ const MOCK_RESPONSES: Record<PersonaId, PersonaResponse> = {
 }
 
 // 역할: 게이트키퍼 mock — 실제 체크 대신 약간 대기 후 valid 리턴
+// (게이트키퍼 자체는 deprecated. 하위 호환용으로만 보존.)
 export async function mockGatekeeper(): Promise<GatekeeperResult> {
   await sleep(1200 + Math.random() * 800)
   return { valid: true, confidence: "high", category: "ui" }
+}
+
+// 역할: 모든 리뷰어를 한 JSON(reviewers.{id})으로 합쳐 조각내 스트리밍 (단일 호출 경로 mock)
+export async function* mockMergedStream(): AsyncGenerator<string, void, void> {
+  const merged = { reviewers: MOCK_RESPONSES }
+  const full = JSON.stringify(merged, null, 2)
+  await sleep(500 + Math.random() * 1200)
+  const CHUNK_MIN = 40
+  const CHUNK_MAX = 120
+  let i = 0
+  while (i < full.length) {
+    const size = Math.floor(CHUNK_MIN + Math.random() * (CHUNK_MAX - CHUNK_MIN))
+    yield full.slice(i, i + size)
+    i += size
+    await sleep(50 + Math.random() * 100)
+  }
 }
 
 // 역할: 페르소나 응답 mock — 최종 JSON을 조각내 SSE 스트리밍처럼 yield
