@@ -21,9 +21,12 @@ import {
   loadCurrentSession,
   clearCurrentSession,
   appendToHistory,
+  getCachedCritique,
+  setCachedCritique,
 } from "@/lib/storage"
 import { readSSE } from "@/lib/sse"
 import { parseMergedResponse } from "@/lib/parse-merged"
+import { sha256Base64Url } from "@/lib/hash"
 import type {
   CritiqueSession,
   PersonaCardState,
@@ -94,6 +97,32 @@ export default function CritiquePage() {
     // 잠금 해제 2개를 앞에, 나머지를 뒤에. 세션 내내 고정되어 잠금 해제 시 카드 이동 없음
     const rest = ALL_PERSONA_IDS.filter((pid) => !initialUnlocked.includes(pid))
     const orderedIds: PersonaId[] = [...initialUnlocked, ...rest]
+
+    // 동일 이미지+맥락에 대한 이전 결과가 localStorage에 있으면 Gemini 호출을 건너뜀
+    const [imageHash, contextHash] = await Promise.all([
+      sha256Base64Url(dataUrl),
+      sha256Base64Url(context),
+    ])
+    const cached = getCachedCritique(imageHash, contextHash)
+
+    if (cached) {
+      const cachedSession: CritiqueSession = {
+        id,
+        imageUrl: dataUrl,
+        context,
+        createdAt: Date.now(),
+        unlockedIds: initialUnlocked,
+        responses: cached.responses,
+        inFlightIds: [],
+        orderedIds,
+      }
+      setSession(cachedSession)
+      setMode("submitting")
+      // 너무 즉시 결과로 뛰어가면 "안 돌았다"는 느낌 → 800ms 페이드인
+      setTimeout(() => setMode("result"), 800)
+      return
+    }
+
     const newSession: CritiqueSession = {
       id,
       imageUrl: dataUrl,
@@ -107,11 +136,16 @@ export default function CritiquePage() {
     }
     setSession(newSession)
     setMode("submitting")
-    await callMerged(newSession)
+    await callMerged(newSession, imageHash, contextHash)
   }, [])
 
   // 6명 리뷰어를 단일 Gemini 호출로 받아와 responses에 저장. 과거 per-persona 호출 대체.
-  const callMerged = useCallback(async (currentSession: CritiqueSession) => {
+  // imageHash/contextHash가 함께 전달되면 merged-done 시 캐시에 저장해 재방문 시 Gemini 호출 0회.
+  const callMerged = useCallback(async (
+    currentSession: CritiqueSession,
+    imageHash?: string,
+    contextHash?: string
+  ) => {
     try {
       const res = await fetch("/api/critique", {
         method: "POST",
@@ -160,6 +194,10 @@ export default function CritiquePage() {
             }
             return next
           })
+          // 동일 이미지+맥락 재업로드 시 Gemini 0회 호출을 위해 캐시 저장
+          if (imageHash && contextHash) {
+            setCachedCritique(imageHash, contextHash, reviewers)
+          }
           setMode("result")
         }
         if (event.type === "error") {
