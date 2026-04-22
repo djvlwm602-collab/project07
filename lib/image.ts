@@ -7,7 +7,8 @@
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 export const MIN_DIMENSION = 200
-export const MAX_DIMENSION = 1920
+// 1024px 상한 — Gemini 입력 토큰 절반 수준으로 감소 + 스트리밍 지연 단축
+export const MAX_DIMENSION = 1024
 export const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"] as const
 
 export class ImageValidationError extends Error {
