@@ -1,15 +1,14 @@
 /**
  * Role: 5초 카운트다운과 랜덤 광고 컴포넌트를 표시하는 모달
  * Key Features: 5초 카운트다운, 광고 랜덤 선택, ESC/배경 클릭으로 닫기 (5초 후)
- * Dependencies: ./ads/PigmaProAd, ./ads/NoCodeKingAd, ./ads/PixelMasterAd
- * Notes: 카운트다운 종료 전에는 닫기 버튼/ESC/배경 클릭 모두 비활성. T19 크리틱 페이지에서 블러된 카드 클릭 시 사용
+ * Dependencies: ./ads/PigmaProAd, ./ads/NoCodeKingAd
+ * Notes: 카운트다운 종료 전에는 닫기 버튼/ESC/배경 클릭 모두 비활성. 크리틱 페이지의 블러 카드 잠금해제 때 사용.
  */
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { PigmaProAd } from "./ads/PigmaProAd"
 import { NoCodeKingAd } from "./ads/NoCodeKingAd"
-import { PixelMasterAd } from "./ads/PixelMasterAd"
 
 const COUNTDOWN_SECONDS = 5
 
@@ -19,7 +18,7 @@ type Props = {
   onCancel: () => void // 사용자가 닫기 (5초 후에만 가능)
 }
 
-const ADS = [PigmaProAd, NoCodeKingAd, PixelMasterAd]
+const ADS = [PigmaProAd, NoCodeKingAd]
 
 export function AdModal({ open, onClose, onCancel }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS)
