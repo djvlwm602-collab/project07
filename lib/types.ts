@@ -60,7 +60,7 @@ export type CritiqueSession = {
 }
 
 // SSE 이벤트 타입
-// - merged-chunk/merged-done: 6명 리뷰어를 단일 Gemini 호출로 합쳐 반환하는 경로 (권장)
+// - merged-chunk/merged-done: 모든 리뷰어를 단일 Gemini 호출로 합쳐 반환하는 경로 (권장)
 // - chunk/done/error(persona 지정): 기존 개별 리뷰어 스트림 경로 (하위 호환)
 // - rejected: 게이트키퍼 거부 경로 (현재는 미사용, @deprecated)
 export type SSEEvent =

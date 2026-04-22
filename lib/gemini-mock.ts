@@ -116,7 +116,7 @@ export async function mockGatekeeper(): Promise<GatekeeperResult> {
   return { valid: true, confidence: "high", category: "ui" }
 }
 
-// 역할: 6명 리뷰어를 한 JSON(reviewers.{id})으로 합쳐 조각내 스트리밍 (단일 호출 경로 mock)
+// 역할: 모든 리뷰어를 한 JSON(reviewers.{id})으로 합쳐 조각내 스트리밍 (단일 호출 경로 mock)
 export async function* mockMergedStream(): AsyncGenerator<string, void, void> {
   const merged = { reviewers: MOCK_RESPONSES }
   const full = JSON.stringify(merged, null, 2)

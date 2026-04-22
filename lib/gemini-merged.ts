@@ -1,5 +1,5 @@
 /**
- * Role: 6명 리뷰어 응답을 단일 Gemini 호출로 스트리밍 (무료 티어 호출 절감)
+ * Role: 모든 리뷰어 응답을 단일 Gemini 호출로 스트리밍 (무료 티어 호출 절감)
  * Key Features: streamMergedReviewers — merged system prompt + MERGED_RESPONSE_SCHEMA로 1회 호출
  *              parseMergedResponse — 부분/전체 JSON에서 reviewers map 추출
  * Dependencies: @google/generative-ai, partial-json, ./personas, ./personas-merged-prompt, ./gemini(GEMINI_MODEL/getGenAI/GeminiImageInput)
@@ -14,7 +14,7 @@ import type { PersonaId } from "./types"
 // 파싱 함수는 클라/서버 공용을 위해 분리 모듈에서 re-export
 export { parseMergedResponse, type MergedReviewers } from "./parse-merged"
 
-// maxOutputTokens를 넉넉히 — 6명 × 응답 평균 ~500토큰 → 3600으로 여유
+// maxOutputTokens를 넉넉히 — N명 × 응답 평균 ~500토큰 → 3600으로 여유
 const MERGED_GENERATION_CONFIG: Omit<GenerationConfig, "responseSchema"> = {
   temperature: 0.85,
   maxOutputTokens: 3600,

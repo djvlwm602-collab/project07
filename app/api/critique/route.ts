@@ -1,5 +1,5 @@
 /**
- * Role: /api/critique POST — 6명 리뷰어를 단일 Gemini 호출로 SSE 스트리밍
+ * Role: /api/critique POST — 모든 리뷰어를 단일 Gemini 호출로 SSE 스트리밍
  * Key Features: streamMergedReviewers 1회 호출, 버퍼 raw chunk를 merged-chunk 이벤트로 중계,
  *               완료 시 merged-done(파싱된 reviewers 맵)
  * Dependencies: @/lib/personas, @/lib/gemini-merged, @/lib/gemini-mock, @/lib/sse

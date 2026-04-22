@@ -1,5 +1,5 @@
 /**
- * Role: 6명 리뷰어의 시스템 프롬프트를 하나로 합성 + 합병 JSON 스키마 정의
+ * Role: 모든 리뷰어의 시스템 프롬프트를 하나로 합성 + 합병 JSON 스키마 정의
  * Key Features: buildMergedSystemPrompt(personas), MERGED_RESPONSE_SCHEMA (reviewers.{id}: PersonaResponse)
  * Dependencies: @google/generative-ai (SchemaType), ./personas, ./types
  * Notes: 6번 호출을 1회로 합쳐 Gemini 무료 티어 한도를 크게 절약. 말투 유지를 위해 리뷰어별 가이드를 명확히 분리.
@@ -19,7 +19,7 @@ const REVIEWER_SCHEMA: ResponseSchema = {
   required: ["oneliner", "strengths", "concerns", "suggestions"],
 }
 
-// 6명 리뷰어가 한 JSON에 각 키로 들어가는 통합 스키마
+// 모든 리뷰어가 한 JSON에 각 키로 들어가는 통합 스키마
 export function buildMergedResponseSchema(personaIds: PersonaId[]): ResponseSchema {
   const reviewerProps: Record<string, ResponseSchema> = {}
   for (const id of personaIds) reviewerProps[id] = REVIEWER_SCHEMA
@@ -36,7 +36,7 @@ export function buildMergedResponseSchema(personaIds: PersonaId[]): ResponseSche
   }
 }
 
-// 역할: 6명 리뷰어 시스템 프롬프트를 하나로 합쳐 Gemini 단일 호출로 처리
+// 역할: 모든 리뷰어 시스템 프롬프트를 하나로 합쳐 Gemini 단일 호출로 처리
 // 각 리뷰어별 블록을 명확히 구분해 말투가 뭉개지지 않도록 설계
 export function buildMergedSystemPrompt(personas: Persona[]): string {
   const reviewerBlocks = personas

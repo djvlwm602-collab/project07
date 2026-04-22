@@ -1,7 +1,7 @@
 /**
  * Role: 크리틱 페이지 — 업로드/제출/단일-호출-스트리밍/결과/광고-해제/거부 모드 통합
  * Key Features: idle/submitting/result/rejected 전환, SSE merged-chunk/done 파싱,
- *               6명 리뷰어를 단일 Gemini 호출로 받아 클라이언트에 저장 → 광고 해제는 UI 블러만 제거
+ *               모든 리뷰어를 단일 Gemini 호출로 받아 클라이언트에 저장 → 광고 해제는 UI 블러만 제거
  * Dependencies: components/UploadZone, ResultGrid, ErrorScreen, AdModal, Logo, LoadingStage,
  *               lib/personas, lib/storage, lib/sse, lib/parse-merged, lib/types
  * Notes: 'use client'. 과거 per-persona 호출 경로는 제거. 캐시 히트 플로우는 후속 커밋에서 도입.
@@ -139,7 +139,7 @@ export default function CritiquePage() {
     await callMerged(newSession, imageHash, contextHash)
   }, [])
 
-  // 6명 리뷰어를 단일 Gemini 호출로 받아와 responses에 저장. 과거 per-persona 호출 대체.
+  // 모든 리뷰어를 단일 Gemini 호출로 받아와 responses에 저장. 과거 per-persona 호출 대체.
   // imageHash/contextHash가 함께 전달되면 merged-done 시 캐시에 저장해 재방문 시 Gemini 호출 0회.
   const callMerged = useCallback(async (
     currentSession: CritiqueSession,
