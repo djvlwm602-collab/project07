@@ -13,8 +13,13 @@ import {
   streamPersonaResponse,
   parsePersonaResponse,
 } from "@/lib/gemini"
+import { mockGatekeeper, mockPersonaStream } from "@/lib/gemini-mock"
 import { writeSSE, SSE_HEADERS } from "@/lib/sse"
 import type { PersonaId, PersonaResponse } from "@/lib/types"
+
+// .env.local의 MOCK_CRITIQUE=1 플래그 — 실제 Gemini 호출을 우회하고 더미 스트림을 반환
+// UI 테스트 중 API 한도 소모 없이 전체 플로우 확인 가능. production에 플래그 없으면 기존 동작.
+const USE_MOCK = process.env.MOCK_CRITIQUE === "1"
 
 // Edge runtime은 일부 SDK 비호환 가능 — Node runtime 권장 (로컬 개발 안정)
 export const runtime = "nodejs"
@@ -80,9 +85,11 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        // 1. 게이트키퍼 (skip 가능)
+        // 1. 게이트키퍼 (skip 가능) — MOCK 모드면 실제 호출 우회
         if (!skipGatekeeper) {
-          const gate = await runGatekeeper(context, imageInput)
+          const gate = USE_MOCK
+            ? await mockGatekeeper()
+            : await runGatekeeper(context, imageInput)
           if (!gate.valid) {
             writeSSE(controller, {
               type: "rejected",
@@ -94,13 +101,16 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 2. 선택된 리뷰어(단일 또는 복수) 병렬 스트리밍
+        // 2. 선택된 리뷰어(단일 또는 복수) 병렬 스트리밍 — MOCK 모드면 더미 스트림
         await Promise.all(
           validIds.map(async (id) => {
             const persona = getPersona(id)
             let buffer = ""
             try {
-              for await (const chunk of streamPersonaResponse(persona, context, imageInput)) {
+              const stream = USE_MOCK
+                ? mockPersonaStream(persona)
+                : streamPersonaResponse(persona, context, imageInput)
+              for await (const chunk of stream) {
                 buffer += chunk
                 writeSSE(controller, { type: "chunk", persona: id, chunk })
               }

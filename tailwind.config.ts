@@ -26,6 +26,14 @@ const config: Config = {
           "Georgia",
           "serif",
         ],
+        // CRIT. 워드마크 전용 — Merriweather (균일한 획, 편집 세리프 톤)
+        display: [
+          "var(--font-display)",
+          "Merriweather",
+          "Georgia",
+          "ui-serif",
+          "serif",
+        ],
       },
       colors: {
         // 리뷰어 카드 3px 바에서만 포인트로 사용
@@ -85,9 +93,20 @@ const config: Config = {
           "0%": { filter: "blur(8px)", opacity: "0" },
           "100%": { filter: "blur(0)", opacity: "1" },
         },
+        "loading-dot": {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.35" },
+          "30%": { transform: "translateY(-6px)", opacity: "1" },
+        },
+        // 로고 마키 — 아이템 세트를 두 번 이어 붙여 -50% 이동으로 매끄러운 무한 루프
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "blur-in": "blur-in 0.4s ease-out",
+        "loading-dot": "loading-dot 1.4s ease-in-out infinite",
+        marquee: "marquee 30s linear infinite",
       },
     },
   },

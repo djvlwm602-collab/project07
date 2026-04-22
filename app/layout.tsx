@@ -1,11 +1,19 @@
 import type { Metadata } from "next"
-import { Noto_Serif_KR } from "next/font/google"
+import { Noto_Serif_KR, Merriweather } from "next/font/google"
 import "./globals.css"
 
 const serif = Noto_Serif_KR({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-serif",
+  display: "swap",
+})
+
+// CRIT. 워드마크 전용 — Merriweather (균일한 획 대비, 가독성 좋은 편집 톤 세리프)
+const display = Merriweather({
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  variable: "--font-display",
   display: "swap",
 })
 
@@ -30,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={serif.variable}>
+    <html lang="ko" className={`${serif.variable} ${display.variable}`}>
       <head>
         {/* Pretendard: 빌드 타임 @import 대신 런타임 <link>로 로드 */}
         <link

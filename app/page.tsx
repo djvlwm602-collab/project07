@@ -28,7 +28,7 @@ export default function Home() {
       <HowItWorks />
       <ReviewerLineup />
 
-      <footer className="bg-apple-black text-white/55 py-12 px-6 text-center text-[12px] leading-relaxed tracking-apple-caption">
+      <footer className="bg-apple-gray text-apple-text/55 py-12 px-6 text-center text-[12px] leading-relaxed tracking-apple-caption">
         CRIT. · Portfolio Review by Industry Pros
         <br />본 서비스의 리뷰어는 가상의 캐릭터이며, 실제 인물·기업과 관련이 없습니다.
       </footer>
@@ -40,18 +40,11 @@ function Hero() {
   return (
     <section className="bg-apple-black text-white">
       <div className="max-w-[980px] mx-auto px-6 pt-28 pb-24 md:pt-36 md:pb-32 text-center">
-        <p className="text-[11px] md:text-[12px] uppercase tracking-[0.24em] text-white/60 mb-7">
-          Portfolio Review by Industry Pros
-        </p>
-        <h1 className="font-serif font-bold text-[44px] md:text-[64px] leading-[1.10] tracking-tight text-white mb-7">
-          당신의 디자인 작업물을,
-          <br />
-          <span className="text-white/90">전문가의 책상 위로.</span>
+        <h1 className="font-sans font-bold text-[44px] md:text-[64px] leading-[1.10] tracking-[-0.01em] text-white mb-7">
+          CRIT. <span className="text-white/90">현업이 봅니다.</span>
         </h1>
         <p className="text-[17px] md:text-[19px] leading-apple-card text-white/70 max-w-xl mx-auto mb-10">
-          현업 PO·디자인 리드가 당신의 작업을 들여다봅니다.
-          <br />
-          리뷰어는 직접 고르세요. 크리틱은 5분이면 도착합니다.
+          PO·디자인 리드 여러 명의 관점, 5분 안에.
         </p>
         <Link
           href="/critique"
@@ -72,13 +65,13 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "리뷰어 선택",
-    body: "원하는 리뷰어를 고르세요. 관점이 다른 사람끼리 섞어도 좋습니다.",
+    title: "입체적 크리틱",
+    body: "강점·우려·제안이 각 리뷰어의 관점으로 한 화면에 도착합니다.",
   },
   {
     num: "03",
-    title: "입체적 크리틱",
-    body: "강점·우려·제안이 각 리뷰어의 관점으로 한 화면에 도착합니다.",
+    title: "내 크리틱에서 다시 보기",
+    body: "받은 결과는 '내 크리틱' 페이지에서 언제든 다시 열어볼 수 있어요.",
   },
 ]
 
@@ -92,7 +85,7 @@ function HowItWorks() {
         <ol className="grid md:grid-cols-3 gap-10">
           {STEPS.map((s) => (
             <li key={s.num} className="text-center md:text-left">
-              <p className="font-serif text-2xl text-apple-text/40 mb-3">{s.num}</p>
+              <p className="font-sans font-semibold text-2xl tracking-tight text-apple-text/40 mb-3">{s.num}</p>
               <h3 className="text-[21px] font-semibold leading-apple-card tracking-apple-caption text-apple-text mb-2">
                 {s.title}
               </h3>

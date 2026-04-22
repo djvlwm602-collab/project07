@@ -12,6 +12,7 @@ import { ResultGrid } from "@/components/ResultGrid"
 import { ErrorScreen } from "@/components/ErrorScreen"
 import { AdModal } from "@/components/AdModal"
 import { Logo } from "@/components/Logo"
+import { LoadingStage } from "@/components/LoadingStage"
 import { ALL_PERSONA_IDS } from "@/lib/personas"
 import {
   saveCurrentSession,
@@ -241,12 +242,7 @@ export default function CritiquePage() {
   if (mode === "submitting") {
     return (
       <main className="min-h-screen bg-apple-gray flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-[28px] font-semibold tracking-[-0.003em] text-apple-text mb-2">
-            작업을 들여다보는 중…
-          </div>
-          <div className="text-[15px] text-apple-text/60">잠시만 기다려주세요</div>
-        </div>
+        <LoadingStage />
       </main>
     )
   }
@@ -254,7 +250,7 @@ export default function CritiquePage() {
   return (
     <main className="min-h-screen bg-apple-gray">
       <Nav onNew={reset} />
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-[1120px] mx-auto px-6 py-10">
         <header className="mb-10">
           <h1 className="text-[32px] md:text-[40px] font-bold leading-apple-section tracking-[-0.003em] text-apple-text mb-3">
             크리틱 결과
