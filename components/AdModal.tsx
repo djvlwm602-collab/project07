@@ -6,7 +6,7 @@
  */
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { PigmaProAd } from "./ads/PigmaProAd"
 import { NoCodeKingAd } from "./ads/NoCodeKingAd"
 
@@ -24,11 +24,13 @@ export function AdModal({ open, onClose, onCancel }: Props) {
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS)
   const skipBtnRef = useRef<HTMLButtonElement>(null)
 
-  // 모달 열릴 때마다 광고 1개 랜덤 선택 (모달이 닫혔다 다시 열리면 다시 뽑음)
-  const AdComponent = useMemo(() => {
-    if (!open) return PigmaProAd
-    return ADS[Math.floor(Math.random() * ADS.length)]
+  // 모달이 닫혀있는 동안 다음에 표시할 광고 인덱스를 미리 순환시켜 놓음.
+  // 첫 paint 시점에 이미 올바른 광고가 선택되어 있어 flash 없이 번갈아 노출.
+  const [adIndex, setAdIndex] = useState(0)
+  useEffect(() => {
+    if (!open) setAdIndex((i) => (i + 1) % ADS.length)
   }, [open])
+  const AdComponent = ADS[adIndex]
 
   // 카운트다운
   useEffect(() => {
