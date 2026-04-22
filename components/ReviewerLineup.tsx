@@ -65,12 +65,12 @@ function ReviewerLogo({ persona }: { persona: Persona }) {
       aria-label={`${persona.company} ${persona.role}`}
     >
       {logo.src ? (
-        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm border border-apple-text/5 overflow-hidden">
-          <img src={logo.src} alt="" className="w-7 h-7 object-contain" />
+        <div className="w-9 h-9 rounded-full bg-white shadow-sm border border-apple-text/5 overflow-hidden">
+          <img src={logo.src} alt="" className="w-full h-full object-cover" />
         </div>
       ) : (
         <div
-          className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-[12px] leading-none"
+          className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[11px] leading-none"
           style={{
             backgroundColor: persona.brandColor,
             color: logo.dark ? "#1d1d1f" : "#fff",

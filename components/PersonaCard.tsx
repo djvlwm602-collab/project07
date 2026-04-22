@@ -35,18 +35,19 @@ export function PersonaCard({ state, onUnlockClick }: Props) {
 
   return (
     <div
-      className={`relative bg-white rounded-apple-lg shadow-apple-card p-6 min-h-[320px] flex flex-col overflow-hidden ${
+      className={`relative bg-white rounded-apple-lg shadow-apple-card p-8 min-h-[340px] flex flex-col overflow-hidden ${
         isLocked ? "select-none" : "animate-blur-in"
       }`}
     >
+      {/* Identity block — 로고 + 회사·직무 + 별칭을 한 세트로 타이트하게 묶음 */}
       <div className={isLocked ? "blur-sm" : ""}>
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3.5 mb-7">
           <Avatar persona={p} />
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-apple-text/60 mb-0.5">
+          <div className="min-w-0 leading-tight">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-apple-text/55">
               {p.company} · {p.role}
             </p>
-            <h3 className="text-[20px] leading-apple-card tracking-apple-caption font-bold text-apple-text truncate">
+            <h3 className="text-[16px] tracking-apple-caption font-semibold text-apple-text/70 truncate mt-0.5">
               {p.title}
             </h3>
           </div>
@@ -91,16 +92,16 @@ function Avatar({ persona }: { persona: Persona }) {
   if (logo.src) {
     return (
       <div
-        className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center bg-white shadow-sm border border-apple-text/5 overflow-hidden"
+        className="w-10 h-10 rounded-full flex-shrink-0 bg-white shadow-sm border border-apple-text/5 overflow-hidden"
         aria-label={`${persona.company} 로고`}
       >
-        <img src={logo.src} alt="" className="w-8 h-8 object-contain" />
+        <img src={logo.src} alt="" className="w-full h-full object-cover" />
       </div>
     )
   }
   return (
     <div
-      className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[13px] leading-none"
+      className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-[12px] leading-none"
       style={{
         backgroundColor: persona.brandColor,
         color: logo.dark ? "#1d1d1f" : "#fff",
@@ -115,15 +116,19 @@ function Avatar({ persona }: { persona: Persona }) {
 function ContentView({ state }: { state: PersonaCardState }) {
   const c: Partial<PersonaResponse> = state.content ?? {}
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
+      {/* Voice — 한마디. 이탤릭 제거하고 볼드로 강조 */}
       {c.oneliner && (
-        <p className="font-serif text-[17px] italic text-apple-text leading-apple-body border-l-2 border-apple-text/15 pl-3">
+        <p className="text-[19px] font-bold leading-apple-card tracking-apple-caption text-apple-text">
           &ldquo;{c.oneliner}&rdquo;
         </p>
       )}
-      <Section label="강점" items={c.strengths} />
-      <Section label="우려" items={c.concerns} />
-      <Section label="제안" items={c.suggestions} />
+      {/* Details — 강점·우려·제안을 별도 그룹으로 구분 */}
+      <div className="space-y-6">
+        <Section label="강점" items={c.strengths} />
+        <Section label="우려" items={c.concerns} />
+        <Section label="제안" items={c.suggestions} />
+      </div>
     </div>
   )
 }
@@ -132,8 +137,10 @@ function Section({ label, items }: { label: string; items?: string[] }) {
   if (!items || items.length === 0) return null
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-[0.12em] text-apple-text/50 mb-2">
-        {label}
+      <div className="mb-3">
+        <span className="inline-block text-[11px] uppercase tracking-[0.12em] text-apple-text/65 bg-apple-gray rounded-full px-2.5 py-1 font-medium">
+          {label}
+        </span>
       </div>
       <ul className="space-y-1.5">
         {items.map((s, i) => (

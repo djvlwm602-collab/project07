@@ -300,17 +300,38 @@ export default function CritiquePage() {
 }
 
 function Nav({ onNew }: { onNew?: () => void }) {
+  // 상단에서는 배경과 섞이도록 투명 → 스크롤 시 흰 반투명 블러로 떠오르는 scroll-aware 패턴
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   return (
-    <nav className="sticky top-0 z-40 h-12 bg-black/80 backdrop-blur-[20px] backdrop-saturate-[1.8] text-white">
+    <nav
+      className={`sticky top-0 z-40 h-12 transition-[background-color,backdrop-filter,border-color] duration-200 ${
+        scrolled
+          ? "bg-white/70 backdrop-blur-[20px] backdrop-saturate-[1.8] border-b border-apple-text/10"
+          : "bg-transparent border-b border-transparent"
+      }`}
+    >
       <div className="max-w-[1120px] mx-auto h-full px-6 flex items-center justify-between">
-        <Logo color="light" />
+        <Logo color="dark" />
         <div className="flex gap-5 items-center text-[12px]">
           {onNew && (
-            <button onClick={onNew} className="text-white/80 hover:text-white transition-colors">
+            <button
+              onClick={onNew}
+              className="text-apple-text/70 hover:text-apple-text transition-colors"
+            >
               새 크리틱
             </button>
           )}
-          <a href="/history" className="text-white/80 hover:text-white transition-colors">
+          <a
+            href="/history"
+            className="text-apple-text/70 hover:text-apple-text transition-colors"
+          >
             내 크리틱
           </a>
         </div>
